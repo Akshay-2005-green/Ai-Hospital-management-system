@@ -51,3 +51,5 @@ mysql+pymysql://root:password@localhost/healthforge
 The ML waiting-time component is intentionally a transparent baseline. For the final academic system, train and evaluate a model such as RandomForestRegressor/XGBoost on a properly collected and de-identified hospital dataset.
 
 The document summarization code currently performs PDF text extraction and extractive-style keyword selection. For a production/advanced NLP version, integrate a validated summarization model such as T5/BART and add healthcare-specific evaluation, privacy controls, and human review.
+#
+Abhishek Singh
