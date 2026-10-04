@@ -1,103 +1,61 @@
 {% extends "base.html" %}
 
-
-{% block title %}
-
-Doctors - {{ hospital.name }}
-
-{% endblock %}
-
+{% block title %}Doctors at {{ hospital.name }} — HealthForge AI{% endblock %}
 
 {% block content %}
+<a href="{{ url_for('hospitals.hospital_details', hospital_id=hospital.hospital_id) }}" class="patient-text-link">
+    <i class="fa-solid fa-arrow-left"></i> Back to {{ hospital.name }} Overview
+</a>
 
-<a href="{{ url_for(
-    'hospitals.hospital_details',
-    hospital_id=hospital.hospital_id
-) }}">
-
-
-<div class="page-header">
-
-    <h1>
-        Doctors at {{ hospital.name }}
-    </h1>
-
-    <p>
-        Find and consult experienced doctors at this hospital.
-    </p>
-
-</div>
-
-
-<div class="doctor-search">
-
-    <input
-        type="text"
-        placeholder="Search doctors by name or specialty..."
-    >
-
-</div>
-
-
-<div class="doctor-list">
-
-    {% for doctor in doctors %}
-
-    <div class="doctor-card">
-
-        <div class="doctor-image">
-
-            <span>👨‍⚕️</span>
-
+<div class="doctors-page" style="margin-top: 16px;">
+    <div class="patient-panel-heading">
+        <div>
+            <p class="patient-eyebrow"><i class="fa-solid fa-user-doctor"></i> SPECIALIST CLINICIANS</p>
+            <h1>Doctors at {{ hospital.name }}</h1>
+            <p>Consult experienced medical specialists and schedule in-person or OPD appointments.</p>
         </div>
-
-
-        <div class="doctor-info">
-
-            <h2>
-                {{ doctor.name }}
-            </h2>
-
-            <p class="doctor-specialization">
-                {{ doctor.specialization }}
-            </p>
-
-            <p>
-                {{ doctor.experience }}+ Years Experience
-            </p>
-
-            <p class="doctor-rating">
-                ⭐ {{ doctor.rating }}
-                ({{ doctor.review_count }} Reviews)
-            </p>
-
-        </div>
-
-
-        <div class="doctor-action">
-
-            <a href="{{ url_for('hospitals.doctor_profile',doctor_id=doctor.doctor_id) }}">
-
-        </div>
-
     </div>
 
-    {% else %}
-
-    <div class="empty-doctors">
-
-        <h2>
-            No doctors found
-        </h2>
-
-        <p>
-            There are currently no doctors listed for this hospital.
-        </p>
-
+    <div class="doctor-search" style="margin: 20px 0;">
+        <div class="input-icon-wrapper">
+            <i class="fa-solid fa-magnifying-glass field-icon"></i>
+            <input type="text" placeholder="Search doctors by name, specialty (e.g. Cardiology), or qualifications...">
+        </div>
     </div>
 
-    {% endfor %}
+    <div class="doctor-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        {% for doctor in doctors %}
+            <div class="patient-panel doctor-card">
+                <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px;">
+                    <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(13, 148, 136, 0.15); color: var(--accent-teal); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+                        <i class="fa-solid fa-user-doctor"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 2px;">{{ doctor.name }}</h2>
+                        <span class="dept-badge" style="margin-bottom: 4px;"><i class="fa-solid fa-stethoscope"></i> {{ doctor.specialization }}</span>
+                        <p style="font-size: 13px; color: var(--text-secondary);"><i class="fa-solid fa-award"></i> {{ doctor.experience }}+ Years Exp · {{ doctor.qualification }}</p>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;"><i class="fa-solid fa-star" style="color: #f59e0b;"></i> {{ doctor.rating }} ({{ doctor.review_count }} Reviews)</p>
+                    </div>
+                </div>
 
+                <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span style="font-weight: 700; font-size: 14px; color: var(--accent-teal);">Fee: ₹{{ doctor.consultation_fee }}</span>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="{{ url_for('hospitals.doctor_profile', doctor_id=doctor.doctor_id) }}" class="patient-secondary-button" style="padding: 6px 12px; font-size: 12px;">
+                            Profile
+                        </a>
+                        <a href="{{ url_for('appointments.book_appointment', doctor_id=doctor.doctor_id) }}" class="patient-primary-button" style="padding: 6px 12px; font-size: 12px;">
+                            Book <i class="fa-solid fa-calendar-plus"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="patient-panel empty-doctors">
+                <h2>No doctors listed</h2>
+                <p>There are currently no doctors registered under this hospital branch.</p>
+            </div>
+        {% endfor %}
+    </div>
 </div>
-
 {% endblock %}

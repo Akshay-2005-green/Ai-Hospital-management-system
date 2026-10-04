@@ -11,49 +11,26 @@ Medical Report Summary - HealthForge AI
 {% block content %}
 
 
-<a
-    href="{{ url_for('medical_records') }}"
-    class="back-link"
->
-    ← Back to Medical Records
+<a href="{{ url_for('patient.medical_records') }}" class="patient-text-link">
+    <i class="fa-solid fa-arrow-left"></i> Back to Medical Records
 </a>
 
-
-<div class="report-summary-page">
-
-
+<div class="report-summary-page" style="margin-top: 16px;">
     <!-- Report Header -->
-
-    <div class="report-summary-header">
-
-        <div class="report-file-icon">
-            📄
+    <div class="patient-panel report-summary-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; gap: 16px; align-items: center;">
+            <div class="report-file-icon" style="width: 50px; height: 50px; border-radius: 12px; background: rgba(13, 148, 136, 0.15); color: var(--accent-teal); display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                <i class="fa-solid fa-file-pdf"></i>
+            </div>
+            <div class="report-file-info">
+                <h1 style="font-size: 20px; font-weight: 700;">{{ record.filename }}</h1>
+                <p style="font-size: 13px; color: var(--text-secondary);">Uploaded on {{ record.uploaded_at.strftime("%d %b %Y") if record.uploaded_at else 'Recent' }}</p>
+            </div>
         </div>
 
-        <div class="report-file-info">
-
-            <h1>
-                {{ record.filename }}
-            </h1>
-
-            <p>
-                Uploaded on
-                {{ record.uploaded_at.strftime("%d %b %Y") }}
-            </p>
-
-        </div>
-
-
-        <a
-            href="{{ url_for(
-                'download_medical_record',
-                record_id=record.id
-            ) }}"
-            class="secondary-button"
-        >
-            Download Original
+        <a href="{{ url_for('patient.download_medical_record', record_id=record.medical_record_id) }}" class="patient-secondary-button">
+            <i class="fa-solid fa-download"></i> Download Document
         </a>
-
     </div>
 
 

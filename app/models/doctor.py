@@ -14,7 +14,13 @@ class Doctor(db.Model):
     )
 
     name = db.Column(db.String(100), nullable=False)
-    specialization = db.Column(db.String(100), nullable=False)
+    specialization = db.Column(db.String(100), nullable=True, default="General")
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="AVAILABLE",
+        info={"validators": ["AVAILABLE", "BUSY", "OFFLINE", "ON_LEAVE"]},
+    )
 
     experience = db.Column(db.Integer, nullable=True, default=0)
     qualification = db.Column(db.String(200), nullable=True)
@@ -25,6 +31,13 @@ class Doctor(db.Model):
 
     rating = db.Column(db.Float, nullable=True, default=0.0)
     review_count = db.Column(db.Integer, nullable=False, default=0)
+
+    __table_args__ = (
+        db.CheckConstraint(
+            "status IN ('AVAILABLE', 'BUSY', 'OFFLINE', 'ON_LEAVE')",
+            name="doctor_status_valid",
+        ),
+    )
 
     hospital = db.relationship(
         "Hospital",
@@ -42,6 +55,11 @@ class Doctor(db.Model):
     queue_events = db.relationship(
         "QueueEvent",
         back_populates="doctor",
+    )
+    queue_entries = db.relationship(
+        "QueueEntry",
+        back_populates="doctor",
+        cascade="all, delete-orphan",
     )
     medical_records = db.relationship(
         "MedicalRecord",

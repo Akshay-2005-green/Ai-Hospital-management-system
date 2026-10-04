@@ -23,7 +23,7 @@ queue_bp = Blueprint(
 
 def patient_required():
 
-    return "patient_id" in session
+    return "patient_id" in session or session.get("role") in {"doctor", "receptionist"}
 
 
 def get_queue_prefix(department):
@@ -121,8 +121,9 @@ def create_today_queues():
 
         queue = QueueEntry(
             appointment_id=appointment.appointment_id,
-            patient_id=appointment.patient_id,
-            hospital_id=appointment.hospital_id,
+            patient=appointment.patient,
+            doctor=appointment.doctor,
+            hospital=appointment.hospital,
             department=department,
             queue_number=queue_number,
             room="Room 101",
@@ -146,7 +147,12 @@ def live_monitor():
     create_today_queues()
 
     return render_template(
-        "live_monitor.html"
+        "live_monitor.html",
+        dashboard_endpoint={
+            "doctor": "doctor.dashboard",
+            "receptionist": "receptionist.dashboard",
+        }.get(session.get("role"), "patient.dashboard"),
+        user_role=session.get("role", "patient"),
     )
 
 
@@ -167,6 +173,7 @@ def get_queue():
             "IN_CONSULTATION",
         ])
     ).order_by(
+        QueueEntry.is_emergency.desc(),
         QueueEntry.department.asc(),
         QueueEntry.position.asc()
     ).all()
@@ -183,6 +190,7 @@ def get_queue():
             "room": queue.room,
             "position": queue.position,
             "status": queue.status,
+            "is_emergency": queue.is_emergency,
         })
 
     return result
@@ -236,6 +244,7 @@ def call_next_patient():
         QueueEntry.department == department,
         QueueEntry.status == "WAITING",
     ).order_by(
+        QueueEntry.is_emergency.desc(),
         QueueEntry.position.asc()
     ).first()
 

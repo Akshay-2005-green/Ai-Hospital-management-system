@@ -1,7 +1,70 @@
-<form
-    method="POST"
-    action="{{ url_for(
-        'appointments.cancel_appointment',
-        appointment_id=appointment.appointment_id
-    ) }}"
->
+{% extends "base.html" %}
+
+{% block title %}
+Appointments - HealthForge AI
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Appointments</h1>
+    <p>Review upcoming and past consultations.</p>
+</div>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>Upcoming</h2>
+    </div>
+
+    {% if upcoming %}
+        {% for appointment in upcoming %}
+        <div class="appointment-card">
+            <div>
+                <h3>{{ appointment.doctor.name if appointment.doctor else 'Doctor' }}</h3>
+                <p>{{ appointment.appointment_date.strftime('%d %b %Y') }} at {{ appointment.appointment_time }}</p>
+                {% if staff_view|default(false) %}
+                    <p>Patient: {{ appointment.patient.name if appointment.patient else 'Patient' }}</p>
+                {% endif %}
+            </div>
+            <div class="appointment-actions">
+                <span class="status-badge">{{ appointment.status }}</span>
+                {% if not staff_view|default(false) %}
+                    <form method="POST" action="{{ url_for('appointments.update_appointment_status', appointment_id=appointment.appointment_id) }}">
+                        <input type="hidden" name="status" value="Checked in">
+                        <button type="submit" class="secondary-button">Check in</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('appointments.cancel_appointment', appointment_id=appointment.appointment_id) }}">
+                        <button type="submit" class="outline-button">Cancel</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No upcoming appointments.</div>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>Past</h2>
+    </div>
+
+    {% if past %}
+        {% for appointment in past %}
+        <div class="appointment-card
+after">
+            <div>
+                <h3>{{ appointment.doctor.name if appointment.doctor else 'Doctor' }}</h3>
+                <p>{{ appointment.appointment_date.strftime('%d %b %Y') }} at {{ appointment.appointment_time }}</p>
+                {% if staff_view|default(false) %}
+                    <p>Patient: {{ appointment.patient.name if appointment.patient else 'Patient' }}</p>
+                {% endif %}
+            </div>
+            <span class="status-badge muted">{{ appointment.status }}</span>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">No past appointments.</div>
+    {% endif %}
+</section>
+{% endblock %}

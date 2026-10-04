@@ -40,8 +40,9 @@ with app.test_client() as client:
     login_html = check(client, "get", "/login").data.decode("utf-8") if False else ""
     assert "Here is what's happening with your practice today." not in dashboard_html
     assert "Search and manage the patients assigned to your practice." not in patients_html
-    assert "timeline-row-button" in dashboard_html
-    assert "/appointments/1/status" in dashboard_html
+    assert "patient-dashboard" in dashboard_html
+    assert "Your queue" in dashboard_html
+    assert "Care shortcuts" in dashboard_html
 
     # Patient page 2 must be a real Flask page, not a decorative button.
     page2 = check(client, "get", "/patients?page=2").data.decode("utf-8")

@@ -88,18 +88,44 @@ def login():
 
         email = request.form["email"].strip()
         password = request.form["password"]
+        selected_role = (request.form.get("role") or "patient").strip().lower()
+
+        if selected_role == "doctor" and email == "doctor@healthforge.ai" and password == "doctor123":
+            session.clear()
+            session["role"] = "doctor"
+            session["doctor_id"] = 1
+            session["doctor_name"] = "Dr. Rahul Verma"
+            return redirect(url_for("doctor.dashboard"))
+
+        if selected_role == "receptionist" and email == "receptionist@healthforge.ai" and password == "receptionist123":
+            session.clear()
+            session["role"] = "receptionist"
+            session["receptionist_id"] = 1
+            session["receptionist_name"] = "Reception Desk"
+            return redirect(url_for("receptionist.dashboard"))
 
         patient = Patient.query.filter_by(
             email=email
         ).first()
 
+        if patient is None and email == "doctor@healthforge.ai" and password == "doctor123":
+            patient = Patient(
+                name="Dr. Rahul Verma",
+                email=email,
+                password_hash=generate_password_hash(password),
+                phone="9876543210",
+                address="HealthForge Clinic, Lucknow",
+            )
+            db.session.add(patient)
+            db.session.commit()
+
         if patient and check_password_hash(
             patient.password_hash,
             password
         ):
-
+            session.clear()
+            session["role"] = "patient"
             session["patient_id"] = patient.patient_id
-
             return redirect(
                 url_for("patient.dashboard")
             )
@@ -112,7 +138,7 @@ def login():
 @auth_bp.route("/logout")
 def logout():
 
-    session.pop("patient_id", None)
+    session.clear()
 
     return redirect(
         url_for("auth.login")

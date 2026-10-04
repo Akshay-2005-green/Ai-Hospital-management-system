@@ -6,3 +6,6 @@ from .hospitals import hospitals_bp
 from .appointments import appointments_bp
 from .queue import queue_bp
 from .notifications import notifications_bp
+from .doctor import doctor_bp
+from .receptionist import receptionist_bp
+from .symptoms import symptoms_bp

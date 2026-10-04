@@ -30,7 +30,7 @@ My Doctors - HealthForge AI
 
     <form
         method="GET"
-        action="{{ url_for('my_doctors') }}"
+        action="{{ url_for('appointments.my_doctors') }}"
     >
 
         <div class="doctor-search-box">
@@ -124,30 +124,13 @@ My Doctors - HealthForge AI
 
 
         <!-- Actions -->
-
         <div class="my-doctor-actions">
-
-            <a
-                href="{{ url_for(
-                    'doctor_details',
-                    doctor_id=doctor.id
-                ) }}"
-                class="secondary-button"
-            >
+            <a href="{{ url_for('appointments.doctor_details', doctor_id=doctor.doctor_id) }}" class="patient-secondary-button">
                 View Profile
             </a>
-
-
-            <a
-                href="{{ url_for(
-                    'book_appointment',
-                    doctor_id=doctor.id
-                ) }}"
-                class="primary-button"
-            >
+            <a href="{{ url_for('appointments.book_appointment', doctor_id=doctor.doctor_id) }}" class="patient-primary-button">
                 Book Appointment
             </a>
-
         </div>
 
 

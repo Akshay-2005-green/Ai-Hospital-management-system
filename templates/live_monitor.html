@@ -56,19 +56,19 @@
     <nav class="sidebar-nav">
 
         <a
-            href="{{ url_for('dashboard') }}"
+            href="{{ url_for(dashboard_endpoint) }}"
             class="nav-item"
         >
 
             <span>▣</span>
 
-            Dashboard
+            {{ user_role|title }} Dashboard
 
         </a>
 
 
         <a
-            href="{{ url_for('hospitals') }}"
+            href="{{ url_for('hospitals.hospitals') }}"
             class="nav-item"
         >
 
@@ -80,7 +80,7 @@
 
 
         <a
-            href="{{ url_for('my_appointments') }}"
+            href="{{ url_for('appointments.my_appointments') }}"
             class="nav-item"
         >
 
@@ -91,20 +91,19 @@
         </a>
 
 
+        {% if user_role == "patient" %}
+            <a
+                href="{{ url_for('appointments.my_doctors') }}"
+                class="nav-item"
+            >
+                <span>👨‍⚕️</span>
+                My Doctors
+            </a>
+        {% endif %}
+
+
         <a
-            href="{{ url_for('my_doctors') }}"
-            class="nav-item"
-        >
-
-            <span>👨‍⚕️</span>
-
-            My Doctors
-
-        </a>
-
-
-        <a
-            href="{{ url_for('live_monitor') }}"
+            href="{{ url_for('queue.live_monitor') }}"
             class="nav-item"
             style="background:#eef8f7; color:#0b9f8f;"
         >
@@ -123,7 +122,7 @@
     <div class="sidebar-bottom">
 
         <a
-            href="{{ url_for('logout') }}"
+            href="{{ url_for('auth.logout') }}"
             class="nav-item logout"
         >
 

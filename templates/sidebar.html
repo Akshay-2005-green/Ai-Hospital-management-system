@@ -1,105 +1,57 @@
-<aside class="sidebar">
+<aside class="sidebar patient-sidebar">
+    <a class="patient-brand" href="{{ url_for('patient.dashboard') }}">
+        <span class="patient-brand-mark"><i class="fa-solid fa-heart-pulse"></i></span>
+        <span class="patient-brand-copy">
+            <strong>HealthForge <span class="ai-pill">AI</span></strong>
+            <small>Patient Care Portal</small>
+        </span>
+    </a>
 
-    <div class="logo">
-
-        <div class="logo-icon">
-            +
-        </div>
-
-        <div>
-            <h2>HealthForge</h2>
-            <span>AI Healthcare</span>
-        </div>
-
-    </div>
-
-
-    <nav class="sidebar-nav">
-
-        <a href="{{ url_for('patient.dashboard') }}"
-           class="nav-item">
-
-            <span>🏠</span>
-            Dashboard
-
+    <div class="patient-nav-caption">CARE NAVIGATION</div>
+    <nav class="sidebar-nav patient-nav" aria-label="Patient navigation">
+        <a href="{{ url_for('patient.dashboard') }}" class="nav-item {% if request.endpoint == 'patient.dashboard' %}active{% endif %}">
+            <span class="patient-nav-icon"><i class="fa-solid fa-chart-pie"></i></span> Dashboard
         </a>
-
-
-        <a href="{{ url_for('hospitals.hospitals') }}"
-           class="nav-item">
-
-            <span>🏥</span>
-            Hospitals
-
+        <a href="{{ url_for('hospitals.hospitals') }}" class="nav-item {% if request.endpoint in ['hospitals.hospitals', 'hospitals.hospital_details', 'hospitals.doctor_list', 'hospitals.doctor_profile', 'hospitals.bed_availability'] %}active{% endif %}">
+            <span class="patient-nav-icon"><i class="fa-solid fa-hospital"></i></span> Find Care & Hospitals
         </a>
-
-
-        <a href="{{ url_for('appointments.appointment_list') }}"
-           class="nav-item">
-
-            <span>📅</span>
-            Appointments
-
+        <a href="{{ url_for('appointments.my_appointments') }}" class="nav-item {% if request.endpoint in ['appointments.my_appointments', 'appointments.update_appointment_status', 'appointments.cancel_appointment'] %}active{% endif %}">
+            <span class="patient-nav-icon"><i class="fa-solid fa-calendar-check"></i></span> Appointments
         </a>
-
-
-        <a href="{{ url_for('appointments.my_doctors') }}"
-           class="nav-item">
-
-            <span>👨‍⚕️</span>
-            My Doctors
-
+        <a href="{{ url_for('appointments.my_doctors') }}" class="nav-item {% if request.endpoint == 'appointments.my_doctors' %}active{% endif %}">
+            <span class="patient-nav-icon"><i class="fa-solid fa-user-doctor"></i></span> My Doctors
         </a>
-
-
-        <a href="{{ url_for('queue.live_monitor') }}"
-           class="nav-item">
-
-            <span>📺</span>
-            Live Monitor
-
+        <a href="{{ url_for('symptoms.assistant') }}" class="nav-item ai-nav-item {% if request.endpoint == 'symptoms.assistant' %}active{% endif %}">
+            <span class="patient-nav-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span> Symptom Assistant
+            <span class="badge-new">AI</span>
         </a>
-
-
-        <a href="{{ url_for('patient.medical_records') }}"
-           class="nav-item">
-
-            <span>📄</span>
-            Medical Records
-
+        <a href="{{ url_for('queue.live_monitor') }}" class="nav-item {% if request.endpoint == 'queue.live_monitor' %}active{% endif %}">
+            <span class="patient-nav-icon"><i class="fa-solid fa-tower-broadcast"></i></span> Live Monitor
+            <span class="pulse-dot"></span>
         </a>
-
-
-        <a href="{{ url_for('notifications.notifications') }}"
-           class="nav-item">
-
-            <span>🔔</span>
-            Notifications
-
+        <a href="{{ url_for('patient.medical_records') }}" class="nav-item {% if request.endpoint in ['patient.medical_records', 'patient.upload_medical_record'] %}active{% endif %}">
+            <span class="patient-nav-icon"><i class="fa-solid fa-file-medical"></i></span> Medical Records
         </a>
-
-
-        <a href="{{ url_for('patient.profile') }}"
-           class="nav-item">
-
-            <span>👤</span>
-            Profile
-
+        <a href="{{ url_for('notifications.notifications') }}" class="nav-item {% if request.endpoint == 'notifications.notifications' %}active{% endif %}">
+            <span class="patient-nav-icon"><i class="fa-solid fa-bell"></i></span> Notifications
         </a>
-
+        <a href="{{ url_for('patient.profile') }}" class="nav-item {% if request.endpoint in ['patient.profile', 'patient.edit_profile'] %}active{% endif %}">
+            <span class="patient-nav-icon"><i class="fa-solid fa-user-gear"></i></span> Profile
+        </a>
     </nav>
 
-
-    <div class="sidebar-bottom">
-
-        <a href="{{ url_for('auth.logout') }}"
-           class="nav-item logout">
-
-            <span>↪</span>
-            Logout
-
+    <div class="patient-sidebar-bottom">
+        <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+            <i class="fa-solid fa-moon dark-icon"></i>
+            <i class="fa-solid fa-sun light-icon"></i>
+            <span class="theme-text">Switch Mode</span>
+        </button>
+        <div class="patient-account-card">
+            <span class="patient-account-avatar"><i class="fa-solid fa-circle-user"></i></span>
+            <span><strong>Patient Portal</strong><small>Connected & Secure</small></span>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="patient-logout" title="Sign out">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out
         </a>
-
     </div>
-
 </aside>

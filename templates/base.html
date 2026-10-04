@@ -1,42 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HealthForge AI — Next-Gen Healthcare Platform{% endblock %}</title>
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <title>
-        {% block title %}
-        HealthForge AI
-        {% endblock %}
-    </title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Application CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script>
+        // Inline anti-flicker script for dark/light theme
+        (function() {
+            const savedTheme = localStorage.getItem('hf_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
 </head>
 
 <body>
 
-{% if session.get("patient_id") %}
+{% if session.get("patient_id") or session.get("role") in ["doctor", "receptionist"] %}
 
-    {% include "sidebar.html" %}
+    {% if session.get("role") in ["doctor", "receptionist"] %}
+        {% include "staff_sidebar.html" %}
+    {% else %}
+        {% include "sidebar.html" %}
+    {% endif %}
 
-    <main class="main-content">
+    <main class="main-content{% if session.get('role') in ['doctor', 'receptionist'] %} staff-main-content{% elif session.get('patient_id') %} patient-main-content{% endif %}">
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="flash-messages">
-
                     {% for category, message in messages %}
-
                         <div class="flash {{ category }}">
-                            {{ message }}
+                            <i class="fa-solid {% if category == 'error' or category == 'danger' %}fa-circle-exclamation{% elif category == 'success' %}fa-circle-check{% else %}fa-circle-info{% endif %}"></i>
+                            <span>{{ message }}</span>
+                            <button type="button" class="flash-close" onclick="this.parentElement.remove()">&times;</button>
                         </div>
-
                     {% endfor %}
-
                 </div>
             {% endif %}
         {% endwith %}
@@ -49,23 +60,17 @@
 {% else %}
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-
         {% if messages %}
-
             <div class="login-flashes">
-
                 {% for category, message in messages %}
-
                     <div class="flash {{ category }}">
-                        {{ message }}
+                        <i class="fa-solid {% if category == 'error' or category == 'danger' %}fa-circle-exclamation{% elif category == 'success' %}fa-circle-check{% else %}fa-circle-info{% endif %}"></i>
+                        <span>{{ message }}</span>
+                        <button type="button" class="flash-close" onclick="this.parentElement.remove()">&times;</button>
                     </div>
-
                 {% endfor %}
-
             </div>
-
         {% endif %}
-
     {% endwith %}
 
     {% block auth_content %}

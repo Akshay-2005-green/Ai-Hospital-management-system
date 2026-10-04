@@ -271,23 +271,32 @@ def book_appointment(doctor_id):
 @appointments_bp.route("/appointments")
 def my_appointments():
 
-    if not patient_required():
+    role = session.get("role")
+    if not patient_required() and role not in {"doctor", "receptionist"}:
         return redirect(
             url_for("auth.login")
         )
 
     today = date.today()
 
-    upcoming = Appointment.query.filter(
-        Appointment.patient_id == session["patient_id"],
+    appointment_query = Appointment.query
+    if role == "patient":
+        appointment_query = appointment_query.filter(
+            Appointment.patient_id == session["patient_id"]
+        )
+    elif role == "doctor":
+        appointment_query = appointment_query.filter(
+            Appointment.doctor_id == session["doctor_id"]
+        )
+
+    upcoming = appointment_query.filter(
         Appointment.appointment_date >= today,
         Appointment.status != "CANCELLED",
     ).order_by(
         Appointment.appointment_date.asc()
     ).all()
 
-    past = Appointment.query.filter(
-        Appointment.patient_id == session["patient_id"],
+    past = appointment_query.filter(
         Appointment.appointment_date < today,
     ).order_by(
         Appointment.appointment_date.desc()
@@ -297,7 +306,31 @@ def my_appointments():
         "appointments.html",
         upcoming=upcoming,
         past=past,
+        staff_view=role in {"doctor", "receptionist"},
     )
+
+
+@appointments_bp.route("/appointments/<int:appointment_id>/status", methods=["POST"])
+def update_appointment_status(appointment_id):
+    role = session.get("role")
+    if not patient_required() and role not in {"doctor", "receptionist"}:
+        return redirect(url_for("auth.login"))
+
+    appointment = db.session.get(Appointment, appointment_id)
+    if appointment is None:
+        return redirect(url_for("appointments.my_appointments"))
+
+    if role == "patient" and appointment.patient_id != session.get("patient_id"):
+        return "Unauthorized", 403
+
+    new_status = request.form.get("status", "").strip()
+    if new_status:
+        formatted_status = new_status.upper().replace(" ", "_")
+        valid_statuses = {'PENDING', 'SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_CONSULTATION', 'COMPLETED', 'CANCELLED', 'NO_SHOW'}
+        appointment.status = formatted_status if formatted_status in valid_statuses else new_status
+        db.session.commit()
+
+    return redirect(url_for("appointments.my_appointments"))
 
 
 @appointments_bp.route(

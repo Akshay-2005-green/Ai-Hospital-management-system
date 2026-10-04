@@ -1,4 +1,7 @@
 from datetime import datetime
+
+from sqlalchemy.orm import validates
+
 from app.extensions import db
 from app.models.enums import AppointmentStatus, ConsultationType
 
@@ -36,12 +39,26 @@ class Appointment(db.Model):
         default=ConsultationType.IN_PERSON.value,
     )
     status = db.Column(
-        db.String(40),
+        db.String(30),
         nullable=False,
-        default=AppointmentStatus.CONFIRMED.value,
+        default="PENDING",
     )
 
     reason = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (
+        db.CheckConstraint(
+            "status IN ('PENDING', 'SCHEDULED', 'CONFIRMED', 'CHECKED_IN', 'IN_CONSULTATION', 'COMPLETED', 'CANCELLED', 'NO_SHOW')",
+            name="appointment_status_valid",
+        ),
+    )
+
+    @validates("appointment_time")
+    def validate_appointment_time(self, key, value):
+        if hasattr(value, "strftime"):
+            return value.strftime("%H:%M")
+        return value
+
     created_at = db.Column(
         db.DateTime,
         nullable=False,

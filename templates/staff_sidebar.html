@@ -1,0 +1,55 @@
+<aside class="sidebar staff-sidebar">
+    <a class="staff-brand" href="{{ url_for('doctor.dashboard') if session.get('role') == 'doctor' else url_for('receptionist.dashboard') }}">
+        <span class="staff-brand-mark"><i class="fa-solid fa-staff-snake"></i></span>
+        <span class="staff-brand-copy">
+            <strong>HealthForge <span class="ai-pill">Ops</span></strong>
+            <small>Care Operations Portal</small>
+        </span>
+    </a>
+
+    <div class="staff-nav-caption">WORKSPACE</div>
+    <nav class="sidebar-nav staff-nav">
+        {% if session.get("role") == "doctor" %}
+            <a href="{{ url_for('doctor.dashboard') }}" class="nav-item {% if request.endpoint == 'doctor.dashboard' %}active{% endif %}">
+                <span class="staff-nav-icon"><i class="fa-solid fa-chart-line"></i></span> Clinical Overview
+            </a>
+        {% else %}
+            <a href="{{ url_for('receptionist.dashboard') }}" class="nav-item {% if request.endpoint == 'receptionist.dashboard' %}active{% endif %}">
+                <span class="staff-nav-icon"><i class="fa-solid fa-hospital-user"></i></span> Desk Overview
+            </a>
+        {% endif %}
+        <a href="{{ url_for('queue.live_monitor') }}" class="nav-item {% if request.endpoint == 'queue.live_monitor' %}active{% endif %}">
+            <span class="staff-nav-icon"><i class="fa-solid fa-tower-broadcast"></i></span> Live Queue Monitor
+            <span class="pulse-dot"></span>
+        </a>
+        <a href="{{ url_for('appointments.my_appointments') }}" class="nav-item {% if request.endpoint == 'appointments.my_appointments' %}active{% endif %}">
+            <span class="staff-nav-icon"><i class="fa-solid fa-calendar-check"></i></span> Appointments
+        </a>
+        {% if session.get("role") == "receptionist" %}
+            <a href="{{ url_for('receptionist.dashboard') }}#new-appointment" class="nav-item">
+                <span class="staff-nav-icon"><i class="fa-solid fa-calendar-plus"></i></span> Add Appointment
+            </a>
+        {% endif %}
+        <a href="{{ url_for('hospitals.hospitals') }}" class="nav-item {% if request.endpoint == 'hospitals.hospitals' %}active{% endif %}">
+            <span class="staff-nav-icon"><i class="fa-solid fa-hospital"></i></span> Hospitals & Beds
+        </a>
+    </nav>
+
+    <div class="staff-sidebar-bottom">
+        <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+            <i class="fa-solid fa-moon dark-icon"></i>
+            <i class="fa-solid fa-sun light-icon"></i>
+            <span class="theme-text">Switch Mode</span>
+        </button>
+        <div class="staff-user-card">
+            <span class="staff-user-avatar"><i class="fa-solid fa-user-doctor"></i></span>
+            <span class="staff-user-copy">
+                <strong>{{ session.get('doctor_name') or session.get('receptionist_name') or 'Staff Member' }}</strong>
+                <small>{{ session.get('role')|title }} Account</small>
+            </span>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="staff-logout" title="Sign out">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out
+        </a>
+    </div>
+</aside>

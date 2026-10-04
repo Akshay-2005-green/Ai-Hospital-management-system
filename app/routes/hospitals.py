@@ -20,7 +20,7 @@ hospitals_bp = Blueprint(
 
 def patient_required():
 
-    return "patient_id" in session
+    return "patient_id" in session or session.get("role") in {"doctor", "receptionist"}
 
 
 @hospitals_bp.route("/hospitals")

@@ -63,13 +63,17 @@ def mark_notification_read(
     )
 
     if notification is None:
-        return "Notification not found", 404
+        return redirect(
+            url_for("notifications.notifications")
+        )
 
     if (
         notification.patient_id
         != session["patient_id"]
     ):
-        return "Unauthorized", 403
+        return redirect(
+            url_for("notifications.notifications")
+        )
 
     notification.is_read = True
 

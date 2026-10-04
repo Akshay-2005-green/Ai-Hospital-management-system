@@ -20,6 +20,7 @@ from app.models.patient import Patient
 from app.models.appointment import Appointment
 from app.models.medical_record import MedicalRecord
 from app.models.notification import Notification
+from app.models.queue_entry import QueueEntry
 
 
 patient_bp = Blueprint("patient", __name__)
@@ -67,29 +68,69 @@ def dashboard():
             url_for("auth.login")
         )
 
-    next_appointment = Appointment.query.filter(
+    active_appointment_statuses = (
+        "SCHEDULED",
+        "CONFIRMED",
+        "CHECKED_IN",
+        "IN_CONSULTATION",
+    )
+    upcoming_query = Appointment.query.filter(
         Appointment.patient_id == patient.patient_id,
         Appointment.appointment_date >= today,
-        Appointment.status == "CONFIRMED",
-    ).order_by(
+        Appointment.status.in_(active_appointment_statuses),
+    )
+    next_appointment = upcoming_query.order_by(
         Appointment.appointment_date.asc()
+    ).order_by(
+        Appointment.appointment_time.asc()
     ).first()
 
-    upcoming_appointments = Appointment.query.filter(
-        Appointment.patient_id == patient.patient_id,
-        Appointment.appointment_date >= today,
-        Appointment.status == "CONFIRMED",
+    upcoming_appointments = upcoming_query.count()
+    recent_appointments = upcoming_query.order_by(
+        Appointment.appointment_date.asc(),
+        Appointment.appointment_time.asc(),
+    ).limit(4).all()
+
+    from app.routes.queue import create_today_queues
+    create_today_queues()
+
+    patient_queue = QueueEntry.query.join(Appointment).filter(
+        QueueEntry.patient_id == patient.patient_id,
+        Appointment.appointment_date == today,
+        QueueEntry.status.in_(("WAITING", "READY", "CALLED", "IN_CONSULTATION")),
+    ).order_by(
+        QueueEntry.position.asc()
+    ).first()
+    people_ahead = 0
+    if patient_queue is not None:
+        people_ahead = QueueEntry.query.filter(
+            QueueEntry.hospital_id == patient_queue.hospital_id,
+            QueueEntry.department == patient_queue.department,
+            QueueEntry.position < patient_queue.position,
+            QueueEntry.status == "WAITING",
+        ).count()
+
+    unread_notifications = Notification.query.filter_by(
+        patient_id=patient.patient_id,
+        is_read=False,
     ).count()
+    medical_records_count = MedicalRecord.query.filter_by(patient_id=patient.patient_id).count()
 
     return render_template(
         "dashboard.html",
         patient=patient,
         next_appointment=next_appointment,
+        upcoming_count=upcoming_appointments,
+        medical_records_count=medical_records_count,
+        unread_notifications=unread_notifications,
         upcoming_appointments=upcoming_appointments,
+        recent_appointments=recent_appointments,
+        patient_queue=patient_queue,
+        people_ahead=people_ahead,
     )
 
 
-@patient_bp.route("/profile")
+@patient_bp.route("/profile", methods=["GET", "POST"])
 def profile():
 
     if not login_required():
@@ -107,9 +148,85 @@ def profile():
             url_for("auth.login")
         )
 
+    if request.method == "POST":
+        patient.name = (request.form.get("name") or patient.name).strip() or patient.name
+        patient.email = (request.form.get("email") or patient.email).strip() or patient.email
+        patient.phone = (request.form.get("phone") or patient.phone).strip() or patient.phone
+        patient.specialization = (request.form.get("specialization") or patient.specialization or "").strip()
+        patient.qualification = (request.form.get("qualification") or patient.qualification or "").strip()
+        patient.experience = (request.form.get("experience") or patient.experience or "").strip()
+        db.session.commit()
+        return redirect(url_for("patient.profile"))
+
     return render_template(
         "profile.html",
         patient=patient,
+    )
+
+
+@patient_bp.route("/patients")
+def patient_list():
+    if not login_required():
+        return redirect(url_for("auth.login"))
+
+    page = request.args.get("page", 1, type=int)
+    page = max(1, page)
+    page_size = 5
+    query = request.args.get("q", "", type=str).strip()
+    gender = request.args.get("gender", "All", type=str)
+
+    names = [
+        "Ramesh Sharma", "Neha Singh", "Amit Kumar", "Priya Patel",
+        "Suresh Yadav", "Vikram Joshi", "Ananya Rao", "Mohit Verma",
+        "Ishita Nair", "Arjun Mehta"
+    ]
+    patients = []
+    for index, name in enumerate(names, start=1):
+        patient = {
+            "id": index,
+            "name": name,
+            "mrn": f"HF2500{index:03}",
+            "age": 28 + index,
+            "gender": "Male" if index % 2 else "Female",
+            "last_visit": "15 May 2025",
+        }
+        if not query or query.lower() in name.lower():
+            if gender == "All" or patient["gender"] == gender:
+                patients.append(patient)
+
+    total_pages = max(1, (len(patients) + page_size - 1) // page_size)
+    if page > total_pages:
+        page = total_pages
+    start = (page - 1) * page_size
+    end = start + page_size
+    page_patients = patients[start:end]
+
+    return render_template(
+        "patients.html",
+        patients=page_patients,
+        page=page,
+        total_pages=total_pages,
+        query=query,
+        gender=gender,
+    )
+
+
+@patient_bp.route("/schedule", methods=["GET", "POST"])
+def schedule():
+    if not login_required():
+        return redirect(url_for("auth.login"))
+
+    selected_date = request.args.get("date") or request.form.get("date") or date.today().strftime("%d %b %Y")
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action in {"add", "save", "toggle"}:
+            return redirect(url_for("patient.schedule", date=selected_date))
+
+    return render_template(
+        "schedule.html",
+        selected_date=selected_date,
+        slots=[{"time": "09:00 AM - 01:00 PM", "enabled": True}],
     )
 
 

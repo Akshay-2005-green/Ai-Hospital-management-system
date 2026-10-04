@@ -9,9 +9,9 @@ class Patient(db.Model):
 
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(150), nullable=False, unique=True, index=True)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=True, default="")
 
-    phone = db.Column(db.String(20), nullable=False, unique=True)
+    phone = db.Column(db.String(20), nullable=True, unique=True, default="0000000000")
     date_of_birth = db.Column(db.Date, nullable=True)
     address = db.Column(db.String(255), nullable=True)
 
