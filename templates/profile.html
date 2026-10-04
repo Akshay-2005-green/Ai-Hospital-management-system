@@ -1,15 +1,11 @@
 {% extends "base.html" %}
 
-
 {% block title %}
-
 My Profile - HealthForge AI
-
 {% endblock %}
 
 
 {% block content %}
-
 
 <div class="page-header">
 
@@ -26,8 +22,6 @@ My Profile - HealthForge AI
 
 <div class="profile-page">
 
-
-    <!-- Profile Header -->
 
     <div class="profile-header-card">
 
@@ -50,7 +44,7 @@ My Profile - HealthForge AI
 
 
         <a
-            href="{{ url_for('edit_profile') }}"
+            href="{{ url_for('patient.edit_profile') }}"
             class="primary-button"
         >
             Edit Profile
@@ -58,9 +52,6 @@ My Profile - HealthForge AI
 
     </div>
 
-
-
-    <!-- Personal Information -->
 
     <div class="profile-card">
 
@@ -70,7 +61,6 @@ My Profile - HealthForge AI
 
 
         <div class="profile-info-grid">
-
 
             <div class="profile-info-item">
 
@@ -105,7 +95,7 @@ My Profile - HealthForge AI
                 </span>
 
                 <strong>
-                    {{ patient.phone }}
+                    {{ patient.phone or "Not provided" }}
                 </strong>
 
             </div>
@@ -156,21 +146,16 @@ My Profile - HealthForge AI
 
             </div>
 
-
         </div>
 
     </div>
 
-
-
-    <!-- Account Information -->
 
     <div class="profile-card">
 
         <h2>
             Account
         </h2>
-
 
         <div class="profile-account-row">
 
@@ -186,18 +171,14 @@ My Profile - HealthForge AI
 
             </div>
 
-
             <span class="account-status">
                 Active
             </span>
 
         </div>
 
-
     </div>
 
-
 </div>
-
 
 {% endblock %}

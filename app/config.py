@@ -1,36 +1,24 @@
-"""Environment-based configuration."""
 import os
+from pathlib import Path
 
-from dotenv import load_dotenv
-
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-class BaseConfig:
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL") or "sqlite:///hospital_flow.db"
+class Config:
+
+    SECRET_KEY = os.getenv(
+        "SECRET_KEY",
+        "healthforge-development-secret-key"
+    )
+
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        "DATABASE_URL",
+        "sqlite:///" + str(BASE_DIR / "hospital_flow.db")
+    )
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Business rule: how many upcoming patients are "prepared" in the queue.
-    # Intentionally configuration, not a database constraint.
-    TOP_N_PREPARATION_WINDOW = int(os.getenv("TOP_N_PREPARATION_WINDOW", 5))
+    # File uploads
+    UPLOAD_FOLDER = str(BASE_DIR / "uploads")
 
-
-class DevelopmentConfig(BaseConfig):
-    DEBUG = True
-
-
-class TestingConfig(BaseConfig):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-
-
-class ProductionConfig(BaseConfig):
-    DEBUG = False
-
-
-CONFIG_MAP = {
-    "development": DevelopmentConfig,
-    "testing": TestingConfig,
-    "production": ProductionConfig,
-}
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB

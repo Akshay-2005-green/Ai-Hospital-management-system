@@ -1,15 +1,11 @@
 {% extends "base.html" %}
 
-
 {% block title %}
-
 Notifications - HealthForge AI
-
 {% endblock %}
 
 
 {% block content %}
-
 
 <div class="page-header">
 
@@ -24,61 +20,50 @@ Notifications - HealthForge AI
 </div>
 
 
-<div class="notifications-page">
+{% if unread_count > 0 %}
 
+<div class="notifications-actions">
 
-    <!-- Mark all as read -->
+    <form
+        method="POST"
+        action="{{ url_for('notifications.mark_all_notifications_read') }}"
+    >
 
-    {% if unread_count > 0 %}
-
-    <div class="notifications-actions">
-
-        <form
-            method="POST"
-            action="{{ url_for('mark_all_notifications_read') }}"
+        <button
+            type="submit"
+            class="mark-all-read-button"
         >
+            Mark all as read
+        </button>
 
-            <button
-                type="submit"
-                class="mark-all-read-button"
-            >
-                Mark all as read
-            </button>
+    </form>
 
-        </form>
+</div>
 
-    </div>
-
-    {% endif %}
+{% endif %}
 
 
-
-    <!-- Notifications -->
+<div class="notifications-page">
 
     {% for notification in notifications %}
 
-
-    <div
-        class="notification-item
+    <div class="notification-item
         {% if not notification.is_read %}
             notification-unread
         {% endif %}"
     >
 
-
-        <!-- Notification Icon -->
-
         <div class="notification-icon">
 
-            {% if notification.notification_type == "appointment" %}
+            {% if notification.type.value == "APPOINTMENT" %}
 
                 📅
 
-            {% elif notification.notification_type == "medical_record" %}
+            {% elif notification.type.value == "MEDICAL" %}
 
                 📄
 
-            {% elif notification.notification_type == "success" %}
+            {% elif notification.type.value == "SYSTEM" %}
 
                 ✓
 
@@ -91,18 +76,13 @@ Notifications - HealthForge AI
         </div>
 
 
-
-        <!-- Notification Content -->
-
         <div class="notification-content">
-
 
             <div class="notification-title-row">
 
                 <h2>
                     {{ notification.title }}
                 </h2>
-
 
                 {% if not notification.is_read %}
 
@@ -129,16 +109,13 @@ Notifications - HealthForge AI
             </span>
 
 
-
-            <!-- Mark single notification as read -->
-
             {% if not notification.is_read %}
 
             <form
                 method="POST"
                 action="{{ url_for(
-                    'mark_notification_read',
-                    notification_id=notification.id
+                    'notifications.mark_notification_read',
+                    notification_id=notification.notification_id
                 ) }}"
                 class="mark-read-form"
             >
@@ -154,17 +131,12 @@ Notifications - HealthForge AI
 
             {% endif %}
 
-
         </div>
-
 
     </div>
 
 
     {% else %}
-
-
-    <!-- No notifications -->
 
     <div class="empty-state">
 
@@ -182,11 +154,8 @@ Notifications - HealthForge AI
 
     </div>
 
-
     {% endfor %}
 
-
 </div>
-
 
 {% endblock %}

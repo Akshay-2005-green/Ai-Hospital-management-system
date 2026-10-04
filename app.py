@@ -415,19 +415,14 @@ class Queue(db.Model):
     )
 
     def get_queue_prefix(department):
-
-    department = department.lower()
-
-    if "dental" in department:
-        return "B"
-
-    if "pediatric" in department or "paediatric" in department:
-        return "K"
-
-    if "pharmacy" in department:
-        return "P"
-
-    return "A"
+        department = department.lower()
+        if "dental" in department:
+            return "B"
+        if "pediatric" in department or "paediatric" in department:
+            return "K"
+        if "pharmacy" in department:
+            return "P"
+        return "A"
 
 def get_next_queue_number(department, hospital_id):
 

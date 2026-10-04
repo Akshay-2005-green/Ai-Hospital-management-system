@@ -3,7 +3,7 @@
     <div class="logo">
 
         <div class="logo-icon">
-            H
+            +
         </div>
 
         <div>
@@ -16,58 +16,75 @@
 
     <nav class="sidebar-nav">
 
-        <a href="/dashboard" class="nav-item">
-            <span>▣</span>
+        <a href="{{ url_for('patient.dashboard') }}"
+           class="nav-item">
+
+            <span>🏠</span>
             Dashboard
+
         </a>
 
-        <a href="/hospitals" class="nav-item">
-            <span>⌕</span>
-            Search Hospital
+
+        <a href="{{ url_for('hospitals.hospitals') }}"
+           class="nav-item">
+
+            <span>🏥</span>
+            Hospitals
+
         </a>
 
-        <a
-            href="{{ url_for('my_doctors') }}"
-            class="nav-item"
-        >
-            <span>♟</span>
-            Doctors
-        </a>
 
-        <a href="/appointments" class="nav-item">
+        <a href="{{ url_for('appointments.appointment_list') }}"
+           class="nav-item">
+
             <span>📅</span>
             Appointments
+
         </a>
 
-        <a
-            href="{{ url_for('medical_records') }}"
-            class="nav-item"
-        >
-            <span>▤</span>
-            <span>My Records</span>
+
+        <a href="{{ url_for('appointments.my_doctors') }}"
+           class="nav-item">
+
+            <span>👨‍⚕️</span>
+            My Doctors
+
         </a>
 
-        <a
-            href="{{ url_for('notifications') }}"
-            class="nav-item"
-        >
+
+        <a href="{{ url_for('queue.live_monitor') }}"
+           class="nav-item">
+
+            <span>📺</span>
+            Live Monitor
+
+        </a>
+
+
+        <a href="{{ url_for('patient.medical_records') }}"
+           class="nav-item">
+
+            <span>📄</span>
+            Medical Records
+
+        </a>
+
+
+        <a href="{{ url_for('notifications.notifications') }}"
+           class="nav-item">
+
             <span>🔔</span>
-            <span>Notifications</span>
-            {% if unread_notification_count > 0 %}
+            Notifications
 
-            <span class="notification-count">
-                {{ unread_notification_count }}
-            </span>
-
-            {% endif %}
         </a>
 
-        <a
-            href="{{ url_for('profile') }}"
-            class="nav-item"
-        >
+
+        <a href="{{ url_for('patient.profile') }}"
+           class="nav-item">
+
             <span>👤</span>
-            <span>Profile</span>
+            Profile
+
         </a>
 
     </nav>
@@ -75,9 +92,12 @@
 
     <div class="sidebar-bottom">
 
-        <a href="/logout" class="nav-item logout">
+        <a href="{{ url_for('auth.logout') }}"
+           class="nav-item logout">
+
             <span>↪</span>
             Logout
+
         </a>
 
     </div>

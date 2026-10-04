@@ -5,17 +5,13 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>HealthForge AI - Login</title>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}"
-    >
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 
 </head>
 
@@ -34,7 +30,8 @@
         </div>
 
 
-        <form method="POST">
+        <form method="POST"
+              action="{{ url_for('auth.login') }}">
 
             <div class="form-group">
 
@@ -85,9 +82,10 @@
             <p>
                 Don't have an account?
 
-                <a href="/register">
+                <a href="{{ url_for('auth.register') }}">
                     Register
                 </a>
+
             </p>
 
         </div>

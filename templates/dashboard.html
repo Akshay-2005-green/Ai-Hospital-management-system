@@ -1,20 +1,11 @@
 {% extends "base.html" %}
 
-
 {% block title %}
-
 HealthForge AI - Dashboard
-
 {% endblock %}
 
 
-
 {% block content %}
-
-
-<!-- =========================
-     Dashboard Header
-     ========================= -->
 
 <div class="dashboard-header">
 
@@ -33,15 +24,7 @@ HealthForge AI - Dashboard
 </div>
 
 
-
-<!-- =========================
-     Statistics
-     ========================= -->
-
 <div class="stats-grid">
-
-
-    <!-- Upcoming Appointments -->
 
     <div class="stat-card">
 
@@ -64,9 +47,6 @@ HealthForge AI - Dashboard
     </div>
 
 
-
-    <!-- Medical Records -->
-
     <div class="stat-card">
 
         <div class="stat-icon">
@@ -80,16 +60,13 @@ HealthForge AI - Dashboard
             </p>
 
             <h2>
-                0
+                {{ medical_records_count|default(0) }}
             </h2>
 
         </div>
 
     </div>
 
-
-
-    <!-- Notifications -->
 
     <div class="stat-card">
 
@@ -104,31 +81,19 @@ HealthForge AI - Dashboard
             </p>
 
             <h2>
-                0
+                {{ unread_notifications|default(0) }}
             </h2>
 
         </div>
 
     </div>
 
-
 </div>
 
 
-
-<!-- =========================
-     Dashboard Content
-     ========================= -->
-
 <div class="dashboard-grid">
 
-
-    <!-- =========================
-         Upcoming Appointment
-         ========================= -->
-
     <section class="dashboard-card">
-
 
         <div class="card-header">
 
@@ -139,17 +104,11 @@ HealthForge AI - Dashboard
         </div>
 
 
-
         {% if next_appointment %}
-
-
-        <!-- Appointment exists -->
 
         <div class="next-appointment-card">
 
-
             <div class="next-appointment-content">
-
 
                 <div class="next-appointment-info">
 
@@ -172,11 +131,12 @@ HealthForge AI - Dashboard
                 </div>
 
 
-
                 <div class="next-appointment-date">
 
                     <strong>
+
                         {{ next_appointment.appointment_date.strftime("%d %b") }}
+
                     </strong>
 
                     <span>
@@ -185,69 +145,50 @@ HealthForge AI - Dashboard
 
                 </div>
 
-
             </div>
 
 
-
             <a
-                href="{{ url_for('my_appointments') }}"
+                href="{{ url_for('appointments.appointment_list') }}"
                 class="primary-button"
             >
                 View Appointment
             </a>
-
 
         </div>
 
 
         {% else %}
 
-
-        <!-- No appointment -->
-
         <div class="empty-state">
-
 
             <div class="empty-icon">
                 📅
             </div>
 
-
             <h3>
                 No upcoming appointments
             </h3>
-
 
             <p>
                 You don't have any appointments scheduled.
             </p>
 
-
             <a
-                href="/hospitals"
+                href="{{ url_for('hospitals.hospitals') }}"
                 class="primary-button"
             >
                 Book Now
             </a>
 
-
         </div>
 
-
         {% endif %}
-
 
     </section>
 
 
-
-    <!-- =========================
-         Quick Actions
-         ========================= -->
-
     <section class="dashboard-card">
-
 
         <div class="card-header">
 
@@ -258,64 +199,47 @@ HealthForge AI - Dashboard
         </div>
 
 
-
         <div class="quick-actions">
 
+            <a href="{{ url_for('hospitals.hospitals') }}">
 
-            <a href="/hospitals">
-
-                <span>
-                    🏥
-                </span>
+                <span>🏥</span>
 
                 Search Hospital
 
             </a>
 
 
+            <a href="{{ url_for('hospitals.doctor_list') }}">
 
-            <a href="/doctors">
-
-                <span>
-                    👨‍⚕️
-                </span>
+                <span>👨‍⚕️</span>
 
                 Find Doctor
 
             </a>
 
 
+            <a href="{{ url_for('appointments.appointment_list') }}">
 
-            <a href="/appointments">
+                <span>📅</span>
 
-                <span>
-                    📅
-                </span>
-
-                Book Appointment
+                Appointments
 
             </a>
 
 
+            <a href="{{ url_for('patient.upload_medical_record') }}">
 
-            <a href="#">
-
-                <span>
-                    📄
-                </span>
+                <span>📄</span>
 
                 Upload Record
 
             </a>
 
-
         </div>
-
 
     </section>
 
-
 </div>
-
 
 {% endblock %}

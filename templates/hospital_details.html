@@ -140,13 +140,13 @@
 
 
         <a
-            href="{{ url_for('bed_availability', hospital_id=hospital.id) }}"
+            href="{{ url_for('hospitals.bed_availability', hospital_id=hospital.hospital_id) }}"
             class="secondary-button"
         >   
             Check Bed Availability
         </a>
         <a
-        href="{{ url_for('doctor_list', hospital_id=hospital.id) }}"
+        href="{{ url_for('hospitals.doctor_list', hospital_id=hospital.hospital_id) }}"
         class="secondary-button"
         >
         Check Doctors

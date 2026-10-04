@@ -12,7 +12,7 @@ Edit Profile - HealthForge AI
 
 
 <a
-    href="{{ url_for('profile') }}"
+    href="{{ url_for('patients.profile') }}"
     class="back-link"
 >
     ← Back to Profile
@@ -51,7 +51,7 @@ Edit Profile - HealthForge AI
 
         <form
             method="POST"
-            action="{{ url_for('edit_profile') }}"
+            action="{{ url_for('patients.edit_profile') }}"
         >
 
 
@@ -167,7 +167,7 @@ Edit Profile - HealthForge AI
             <div class="profile-form-actions">
 
                 <a
-                    href="{{ url_for('profile') }}"
+                    href="{{ url_for('patients.profile') }}"
                     class="secondary-button"
                 >
                     Cancel

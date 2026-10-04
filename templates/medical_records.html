@@ -27,7 +27,7 @@ My Medical Records - HealthForge AI
 
 
     <a
-        href="{{ url_for('upload_medical_record') }}"
+        href="{{ url_for('patients.upload_medical_record') }}"
         class="primary-button"
     >
         Upload New
@@ -80,7 +80,7 @@ My Medical Records - HealthForge AI
 
             <a
                 href="{{ url_for(
-                    'download_medical_record',
+                    'patients.download_medical_record',
                     record_id=record.id
                 ) }}"
                 class="record-download-button"
@@ -89,7 +89,7 @@ My Medical Records - HealthForge AI
             </a>
             <a
                 href="{{ url_for(
-                'analyze_medical_record',
+                'patients.analyze_medical_record',
                 record_id=record.id
             ) }}"
             class="record-analyze-button"
@@ -101,7 +101,7 @@ My Medical Records - HealthForge AI
             <form
                 method="POST"
                 action="{{ url_for(
-                    'delete_medical_record',
+                    'patients.delete_medical_record',
                     record_id=record.id
                 ) }}"
                 onsubmit="return confirm('Are you sure you want to delete this record?');"

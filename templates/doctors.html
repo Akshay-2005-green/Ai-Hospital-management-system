@@ -10,12 +10,10 @@ Doctors - {{ hospital.name }}
 
 {% block content %}
 
-<a
-    href="{{ url_for('hospital_details', hospital_id=hospital.id) }}"
-    class="back-link"
->
-    ← Back
-</a>
+<a href="{{ url_for(
+    'hospitals.hospital_details',
+    hospital_id=hospital.hospital_id
+) }}">
 
 
 <div class="page-header">
@@ -78,12 +76,7 @@ Doctors - {{ hospital.name }}
 
         <div class="doctor-action">
 
-            <a
-                href="{{ url_for('doctor_profile', doctor_id=doctor.id) }}"
-                class="view-button"
-            >
-                View Profile
-            </a>
+            <a href="{{ url_for('hospitals.doctor_profile',doctor_id=doctor.doctor_id) }}">
 
         </div>
 

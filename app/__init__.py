@@ -1,31 +1,58 @@
-"""Application factory for the AI-Powered Hospital Flow Management System."""
-import os
+from flask import Flask
 
-from flask import Flask, jsonify
-
-from app.config import CONFIG_MAP
+from app.config import Config
 from app.extensions import db, migrate
 
 
-def create_app(config_name: str | None = None) -> Flask:
-    config_name = config_name or os.getenv("FLASK_ENV", "development")
-    app = Flask(__name__)
-    app.config.from_object(CONFIG_MAP.get(config_name, CONFIG_MAP["development"]))
+def create_app(config_name=None):
 
-    db.init_app(app)
+    flask_app = Flask(
+        __name__,
+        template_folder="../templates",
+        static_folder="../static",
+    )
 
-    # Importing the models package registers every table on db.metadata,
-    # which Flask-Migrate / Alembic needs for autogeneration.
-    from app import models  # noqa: F401
+    flask_app.config.from_object(Config)
 
-    migrate.init_app(app, db)
+    # Initialize extensions
+    db.init_app(flask_app)
+    migrate.init_app(flask_app, db)
 
-    from app.cli import register_cli
+    # Import all models
+    from app.models import (
+        Patient,
+        Hospital,
+        Bed,
+        Doctor,
+        Appointment,
+        QueueEntry,
+        QueueEvent,
+        DoctorAvailability,
+        MedicalRecord,
+        Notification,
+        MLPrediction,
+    )
 
-    register_cli(app)
+    # Create database tables
+    with flask_app.app_context():
+        db.create_all()
 
-    @app.get("/health")
-    def health():
-        return jsonify(status="ok")
+    # Import routes
+    from app.routes import (
+        auth_bp,
+        patient_bp,
+        hospitals_bp,
+        appointments_bp,
+        queue_bp,
+        notifications_bp,
+    )
 
-    return app
+    # Register blueprints
+    flask_app.register_blueprint(auth_bp)
+    flask_app.register_blueprint(patient_bp)
+    flask_app.register_blueprint(hospitals_bp)
+    flask_app.register_blueprint(appointments_bp)
+    flask_app.register_blueprint(queue_bp)
+    flask_app.register_blueprint(notifications_bp)
+
+    return flask_app
