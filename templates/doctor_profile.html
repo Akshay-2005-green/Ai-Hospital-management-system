@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{{ doctor.name }} — HealthForge AI Profile{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('hospitals.doctor_list', hospital_id=doctor.hospital_id) }}" class="patient-text-link">
+    <i class="fa-solid fa-arrow-left"></i> Back to Hospital Doctors
+</a>
+
+<div class="doctor-profile" style="margin-top: 16px;">
+    <!-- Doctor Header -->
+    <div class="patient-panel doctor-profile-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <div style="width: 70px; height: 70px; border-radius: 16px; background: rgba(13, 148, 136, 0.15); color: var(--accent-teal); display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                <i class="fa-solid fa-user-doctor"></i>
+            </div>
+            <div>
+                <h1 style="font-size: 24px; font-weight: 800;">{{ doctor.name }}</h1>
+                <p class="doctor-specialization" style="color: var(--accent-teal); font-weight: 600;">{{ doctor.specialization }}</p>
+                <p style="font-size: 13px; color: var(--text-secondary);">{{ doctor.experience }}+ Years Professional Experience · {{ doctor.qualification }}</p>
+                <p class="doctor-rating" style="font-size: 13px; margin-top: 4px;"><i class="fa-solid fa-star" style="color: #f59e0b;"></i> {{ doctor.rating }} ({{ doctor.review_count }} Reviews)</p>
+            </div>
+        </div>
+
+        <div>
+            <a href="{{ url_for('appointments.book_appointment', doctor_id=doctor.doctor_id) }}" class="patient-primary-button">
+                <i class="fa-solid fa-calendar-plus"></i> Book Consultation
+            </a>
+        </div>
+    </div>
+
+    <!-- Doctor Details -->
+    <div class="doctor-details-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-top: 20px;">
+        <div class="patient-panel doctor-details-card">
+            <h2><i class="fa-solid fa-user"></i> About Doctor</h2>
+            <p>{{ doctor.name }} is an experienced {{ doctor.specialization }} providing specialist clinical consultation and patient care.</p>
+        </div>
+
+        <div class="patient-panel doctor-details-card">
+            <h2><i class="fa-solid fa-graduation-cap"></i> Qualifications</h2>
+            <p>{{ doctor.qualification }}</p>
+        </div>
+
+        <div class="patient-panel doctor-details-card">
+            <h2><i class="fa-solid fa-indian-rupee-sign"></i> Consultation Fee</h2>
+            <p class="fee" style="font-size: 24px; font-weight: 800; color: var(--accent-teal);">₹{{ doctor.consultation_fee }}</p>
+        </div>
+
+        <div class="patient-panel doctor-details-card">
+            <h2><i class="fa-solid fa-calendar-days"></i> Available Days</h2>
+            <p>{{ doctor.available_days }}</p>
+        </div>
+
+        <div class="patient-panel doctor-details-card">
+            <h2><i class="fa-solid fa-clock"></i> Timings</h2>
+            <p>{{ doctor.timings }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

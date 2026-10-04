@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Hospitals & Healthcare Facilities — HealthForge AI{% endblock %}
+
+{% block content %}
+<div class="hospitals-page">
+    <div class="patient-panel-heading">
+        <div>
+            <p class="patient-eyebrow"><i class="fa-solid fa-hospital-user"></i> AFFILIATED NETWORK</p>
+            <h1>Search Hospitals & Care Centers</h1>
+            <p>Find accredited multi-specialty hospitals, check live bed capacity, and view specialist clinicians.</p>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <div class="input-icon-wrapper" style="flex: 2;">
+            <i class="fa-solid fa-magnifying-glass field-icon"></i>
+            <input type="text" placeholder="Search hospital name, location, or specialty...">
+        </div>
+        <select class="styled-select">
+            <option>All Locations</option>
+            <option>Lucknow</option>
+        </select>
+        <select class="styled-select">
+            <option>All Specialities</option>
+            <option>Cardiology</option>
+            <option>Neurology</option>
+            <option>Orthopedics</option>
+            <option>Gynecology</option>
+        </select>
+        <button class="patient-primary-button"><i class="fa-solid fa-filter"></i> Search</button>
+    </div>
+
+    <div class="hospital-list">
+        {% for hospital in hospitals %}
+            <div class="hospital-card">
+                <div class="hospital-image">
+                    <div class="hospital-placeholder">
+                        <i class="fa-solid fa-hospital"></i>
+                    </div>
+                </div>
+
+                <div class="hospital-info">
+                    <h2>{{ hospital.name }}</h2>
+                    <p class="location"><i class="fa-solid fa-location-dot"></i> {{ hospital.location }}</p>
+                    <p class="rating-tag"><i class="fa-solid fa-star" style="color: #f59e0b;"></i> {{ hospital.rating }} <span>({{ hospital.review_count }} Reviews)</span></p>
+                    <span class="speciality"><i class="fa-solid fa-award"></i> Multi-Specialty Accredited</span>
+                    <p class="hospital-desc-text">{{ hospital.description }}</p>
+                </div>
+
+                <div class="hospital-action">
+                    <div class="beds-summary-pill">
+                        <i class="fa-solid fa-bed-pulse"></i> {{ hospital.beds|sum(attribute='available_beds') if hospital.beds else 'Live' }} Beds Free
+                    </div>
+                    <a href="{{ url_for('hospitals.hospital_details', hospital_id=hospital.hospital_id) }}" class="patient-primary-button">
+                        View Details & Beds <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

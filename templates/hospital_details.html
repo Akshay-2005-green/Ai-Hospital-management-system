@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ hospital.name }} — HealthForge AI{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('hospitals.hospitals') }}" class="patient-text-link">
+    <i class="fa-solid fa-arrow-left"></i> Back to Hospitals Network
+</a>
+
+<div class="hospital-details" style="margin-top: 16px;">
+    <!-- Hospital Header -->
+    <div class="patient-panel hospital-details-header">
+        <div class="hospital-large-image">
+            <i class="fa-solid fa-hospital-user"></i>
+        </div>
+
+        <div class="hospital-title">
+            <h1>{{ hospital.name }}</h1>
+            <p class="hospital-location"><i class="fa-solid fa-location-dot"></i> {{ hospital.location }}</p>
+            <p class="hospital-rating"><i class="fa-solid fa-star" style="color: #f59e0b;"></i> {{ hospital.rating }} <span>({{ hospital.review_count }} Patient Reviews)</span></p>
+        </div>
+    </div>
+
+    <!-- Main Information -->
+    <div class="details-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0;">
+        <!-- About -->
+        <section class="patient-panel details-card">
+            <h2><i class="fa-solid fa-circle-info"></i> About Hospital</h2>
+            <p>{{ hospital.description }}</p>
+        </section>
+
+        <!-- Bed Availability -->
+        <section class="patient-panel details-card">
+            <h2><i class="fa-solid fa-bed-pulse"></i> Live Bed Status</h2>
+            {% for bed in hospital.beds %}
+                <div class="bed-row" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border-color);">
+                    <span>{{ bed.bed_type }}</span>
+                    <strong class="available" style="color: var(--accent-teal);">{{ bed.available_beds }} / {{ bed.total_beds }} Free</strong>
+                </div>
+            {% else %}
+                <p>No bed metrics published.</p>
+            {% endfor %}
+        </section>
+
+        <!-- Facilities -->
+        <section class="patient-panel details-card">
+            <h2><i class="fa-solid fa-kit-medical"></i> Clinical Facilities</h2>
+            <ul class="facilities-list" style="list-style: none; padding: 0;">
+                <li><i class="fa-solid fa-check" style="color: #10b981;"></i> 24x7 Emergency Triage</li>
+                <li><i class="fa-solid fa-check" style="color: #10b981;"></i> Advanced ICU & Ventilators</li>
+                <li><i class="fa-solid fa-check" style="color: #10b981;"></i> Digital Queue Monitors</li>
+                <li><i class="fa-solid fa-check" style="color: #10b981;"></i> In-house Pharmacy & Pathology</li>
+            </ul>
+        </section>
+    </div>
+
+    <!-- Actions -->
+    <div class="hospital-actions" style="display: flex; gap: 14px; flex-wrap: wrap;">
+        <a href="{{ url_for('hospitals.doctor_list', hospital_id=hospital.hospital_id) }}" class="patient-primary-button">
+            <i class="fa-solid fa-user-doctor"></i> View Doctors & Book Appointment
+        </a>
+        <a href="{{ url_for('hospitals.bed_availability', hospital_id=hospital.hospital_id) }}" class="patient-secondary-button">
+            <i class="fa-solid fa-bed-pulse"></i> Check Full Bed Breakdown
+        </a>
+    </div>
+</div>
+{% endblock %}

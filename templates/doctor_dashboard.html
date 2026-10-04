@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - HealthForge{% endblock %}
+
+{% block content %}
+<div class="staff-workspace">
+    <header class="staff-page-header">
+        <div>
+            <p class="patient-eyebrow">CLINICAL WORKSPACE <span class="staff-header-divider">/</span> {{ today }}</p>
+            <h1>Welcome, {{ doctor_name }}</h1>
+            <p>Review today's schedule and work through the patient queue.</p>
+        </div>
+        <a href="{{ url_for('queue.live_monitor') }}" class="patient-primary-button"><span aria-hidden="true">◉</span> Open live monitor</a>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="staff-message {{ category }}" role="status">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="staff-stat-grid">
+        <article class="staff-stat-card"><span class="patient-stat-icon patient-blue">▦</span><div><small>Today's appointments</small><strong>{{ appointments|length }}</strong><span class="staff-stat-hint">Your scheduled visits</span></div></article>
+        <article class="staff-stat-card"><span class="patient-stat-icon patient-teal">◉</span><div><small>Active queue</small><strong>{{ queue_count }}</strong><span class="staff-stat-hint">Patients awaiting care</span></div></article>
+        <article class="staff-stat-card"><span class="patient-stat-icon patient-purple">♙</span><div><small>Registered patients</small><strong>{{ active_patients }}</strong><span class="staff-stat-hint">Across the clinic</span></div></article>
+        <article class="staff-stat-card staff-stat-priority"><span class="patient-stat-icon patient-orange">⚑</span><div><small>Priority cases</small><strong>{{ queue_entries|selectattr('is_emergency')|list|length }}</strong><span class="staff-stat-hint">Clinical assessment first</span></div></article>
+    </section>
+
+    <section class="staff-panel">
+        <div class="staff-panel-heading">
+            <div><p class="patient-eyebrow">ASSESSMENT ORDER</p><h2>Live patient queue</h2><p class="staff-panel-subtitle">Urgent arrivals are surfaced first for clinical assessment.</p></div>
+            <a class="patient-text-link" href="{{ url_for('queue.live_monitor') }}">Refresh monitor →</a>
+        </div>
+        {% if queue_entries %}
+            <div class="staff-doctor-queue">
+                {% for entry in queue_entries %}
+                    <article class="staff-doctor-queue-row {% if entry.is_emergency %}priority{% endif %}">
+                        <div class="staff-queue-number">{{ entry.queue_number }}</div>
+                        <div class="staff-queue-patient">
+                            {% if entry.is_emergency %}<span class="staff-emergency-chip">PRIORITY · CLINICIAN ASSESSMENT</span>{% endif %}
+                            <strong>{{ entry.patient.name if entry.patient else 'Patient' }}</strong>
+                            <span>{{ entry.department }} · {{ entry.room or 'Room not assigned' }} · {{ entry.status|replace('_', ' ')|title }}</span>
+                        </div>
+                        <form method="post" action="{{ url_for('doctor.advance_queue', queue_id=entry.queue_entry_id) }}">
+                            {% if entry.status in ['WAITING', 'READY'] %}
+                                <button class="patient-secondary-button" type="submit">Call patient</button>
+                            {% elif entry.status == 'CALLED' %}
+                                <button class="patient-secondary-button" type="submit">Start consultation</button>
+                            {% elif entry.status == 'IN_CONSULTATION' %}
+                                <button class="patient-secondary-button" type="submit">Complete visit</button>
+                            {% endif %}
+                        </form>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="patient-queue-empty"><span class="patient-queue-empty-icon">◷</span><div><strong>No patients are waiting for you</strong><p>Checked-in appointments and urgent arrivals assigned to you will appear here.</p></div></div>
+        {% endif %}
+    </section>
+
+    <section class="staff-panel">
+        <div class="staff-panel-heading">
+            <div><p class="patient-eyebrow">WORKING HOURS</p><h2>Manage your availability</h2><p class="staff-panel-subtitle">Reception can book visits only during the shifts you publish.</p></div>
+        </div>
+        {% if doctor_exists %}
+            <form method="post" action="{{ url_for('doctor.update_availability') }}" class="staff-shift-form">
+                <div>
+                    <label for="shift-day">Weekday</label>
+                    <select name="day_of_week" id="shift-day" required>
+                        {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+                            <option value="{{ day }}">{{ day }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="shift-start">Shift starts</label>
+                    <input id="shift-start" type="time" name="start_time" value="09:00">
+                </div>
+                <div>
+                    <label for="shift-end">Shift ends</label>
+                    <input id="shift-end" type="time" name="end_time" value="17:00">
+                </div>
+                <label class="staff-shift-available"><input type="checkbox" name="is_available" value="yes" checked> Available on this weekday</label>
+                <button type="submit" class="patient-secondary-button">Save shift</button>
+            </form>
+            <div class="staff-shift-list">
+                {% for shift in availability %}
+                    <div class="staff-shift-row">
+                        <strong>{{ shift.day_of_week }}</strong>
+                        {% if shift.is_available and shift.start_time and shift.end_time %}
+                            <span>{{ shift.start_time.strftime('%H:%M') }}–{{ shift.end_time.strftime('%H:%M') }}</span>
+                        {% else %}
+                            <span class="staff-shift-off">Not available</span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="patient-empty-copy">No weekly shifts configured yet. Set a shift above; reception can only book within these hours.</p>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="patient-empty-copy">A doctor profile must be linked to this account before working hours can be edited.</p>
+        {% endif %}
+    </section>
+
+    <section class="staff-panel staff-doctor-appointments">
+        <div class="staff-panel-heading">
+            <div><p class="patient-eyebrow">TODAY'S SCHEDULE</p><h2>Appointments</h2><p class="staff-panel-subtitle">Your scheduled patients and visit details.</p></div>
+            <span class="staff-count-chip">{{ appointments|length }} scheduled</span>
+        </div>
+        {% if appointments %}
+            <div class="staff-doctor-appointment-list">
+                {% for appointment in appointments %}
+                    <article class="staff-doctor-appointment-row">
+                        <time>{{ appointment.appointment_time }}</time>
+                        <div>
+                            <strong>{{ appointment.patient.name if appointment.patient else 'Patient' }}</strong>
+                            <span>{{ appointment.patient.phone if appointment.patient else 'No phone' }} · {{ appointment.reason or 'No visit reason provided' }}</span>
+                        </div>
+                        <span class="staff-appointment-status">{{ appointment.status|replace('_', ' ')|title }}</span>
+                        {% if appointment.queue_entry and appointment.queue_entry.is_emergency %}
+                            <span class="staff-emergency-chip">PRIORITY</span>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="patient-empty-copy">You have no appointments scheduled today.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Portal — HealthForge AI{% endblock %}
+
+{% block content %}
+<div class="patient-dashboard">
+    <header class="patient-dashboard-header">
+        <div>
+            <div class="header-top-meta">
+                <span class="patient-eyebrow"><i class="fa-solid fa-heart-pulse"></i> PERSONAL HEALTH DASHBOARD</span>
+                <span class="live-clock-pill" id="live-header-clock"><i class="fa-solid fa-clock"></i> Loading time...</span>
+            </div>
+            <h1>Welcome back, {{ patient.name }}</h1>
+            <p>Your appointments, digital health records, and AI care navigation in one connected dashboard.</p>
+        </div>
+        <div class="dashboard-header-cta">
+            <a class="patient-primary-button" href="{{ url_for('symptoms.assistant') }}">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> AI Symptom Check
+            </a>
+            <a class="patient-secondary-button" href="{{ url_for('hospitals.hospitals') }}">
+                <i class="fa-solid fa-calendar-plus"></i> Book Appointment
+            </a>
+        </div>
+    </header>
+
+    <section class="patient-stat-grid" aria-label="Your health summary">
+        <a class="patient-stat-card card-gradient-1" href="{{ url_for('appointments.my_appointments') }}">
+            <span class="patient-stat-icon patient-blue"><i class="fa-solid fa-calendar-check"></i></span>
+            <div class="stat-meta">
+                <small>Upcoming Appointments</small>
+                <strong>{{ upcoming_count }}</strong>
+            </div>
+            <span class="stat-trend positive"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+
+        <a class="patient-stat-card card-gradient-2" href="{{ url_for('queue.live_monitor') }}">
+            <span class="patient-stat-icon patient-teal"><i class="fa-solid fa-tower-broadcast"></i></span>
+            <div class="stat-meta">
+                <small>Today's Queue Ticket</small>
+                <strong>{{ patient_queue.queue_number if patient_queue else 'None Active' }}</strong>
+            </div>
+            <span class="stat-trend"><i class="fa-solid fa-signal"></i> Live</span>
+        </a>
+
+        <a class="patient-stat-card card-gradient-3" href="{{ url_for('patient.medical_records') }}">
+            <span class="patient-stat-icon patient-purple"><i class="fa-solid fa-file-waveform"></i></span>
+            <div class="stat-meta">
+                <small>Health & Lab Records</small>
+                <strong>{{ medical_records_count }}</strong>
+            </div>
+            <span class="stat-trend"><i class="fa-solid fa-vault"></i> Secure</span>
+        </a>
+
+        <a class="patient-stat-card card-gradient-4" href="{{ url_for('notifications.notifications') }}">
+            <span class="patient-stat-icon patient-orange"><i class="fa-solid fa-bell"></i></span>
+            <div class="stat-meta">
+                <small>Unread Notifications</small>
+                <strong>{{ unread_notifications }}</strong>
+            </div>
+            {% if unread_notifications > 0 %}
+                <span class="stat-trend urgent-badge"><i class="fa-solid fa-circle"></i> New</span>
+            {% else %}
+                <span class="stat-trend"><i class="fa-solid fa-check-double"></i> Clean</span>
+            {% endif %}
+        </a>
+    </section>
+
+    <div class="patient-dashboard-grid">
+        <!-- Live Care Status Card -->
+        <section class="patient-panel patient-queue-panel">
+            <div class="patient-panel-heading">
+                <div>
+                    <p class="patient-eyebrow">REAL-TIME CLINIC STATUS</p>
+                    <h2><i class="fa-solid fa-hospital-user"></i> Your queue</h2>
+                </div>
+                <span class="patient-live-badge"><i class="fa-solid fa-circle fa-beat-fade"></i> LIVE FEED</span>
+            </div>
+
+            {% if patient_queue %}
+                <div class="patient-queue-content">
+                    <div class="queue-number-box">
+                        <span class="patient-queue-label">TOKEN NUMBER</span>
+                        <strong class="patient-queue-number">#{{ patient_queue.queue_number }}</strong>
+                    </div>
+                    <div class="patient-queue-details">
+                        <span class="dept-badge"><i class="fa-solid fa-stethoscope"></i> {{ patient_queue.department }}</span>
+                        <span class="room-badge"><i class="fa-solid fa-door-open"></i> {{ patient_queue.room or 'Room Assignment Pending' }}</span>
+                    </div>
+
+                    <!-- Step progress tracker -->
+                    <div class="queue-step-tracker">
+                        <div class="step {% if patient_queue.status in ['WAITING', 'CALLED', 'IN_CONSULTATION', 'COMPLETED'] %}completed{% endif %}">
+                            <span class="step-dot"><i class="fa-solid fa-check"></i></span>
+                            <small>Checked In</small>
+                        </div>
+                        <div class="step-line {% if patient_queue.status in ['WAITING', 'CALLED', 'IN_CONSULTATION', 'COMPLETED'] %}active{% endif %}"></div>
+                        <div class="step {% if patient_queue.status in ['WAITING', 'CALLED', 'IN_CONSULTATION', 'COMPLETED'] %}active{% endif %}">
+                            <span class="step-dot">2</span>
+                            <small>Waiting</small>
+                        </div>
+                        <div class="step-line {% if patient_queue.status in ['CALLED', 'IN_CONSULTATION', 'COMPLETED'] %}active{% endif %}"></div>
+                        <div class="step {% if patient_queue.status in ['CALLED', 'IN_CONSULTATION', 'COMPLETED'] %}active{% endif %}">
+                            <span class="step-dot">3</span>
+                            <small>Called</small>
+                        </div>
+                        <div class="step-line {% if patient_queue.status in ['IN_CONSULTATION', 'COMPLETED'] %}active{% endif %}"></div>
+                        <div class="step {% if patient_queue.status in ['IN_CONSULTATION', 'COMPLETED'] %}active{% endif %}">
+                            <span class="step-dot">4</span>
+                            <small>Consultation</small>
+                        </div>
+                    </div>
+
+                    <div class="patient-queue-status-alert">
+                        <span class="patient-status-dot {{ patient_queue.status|lower|replace('_', '-') }}"></span>
+                        <div>
+                            <strong>Status: {{ patient_queue.status|replace('_', ' ')|title }}</strong>
+                            {% if patient_queue.status == 'WAITING' %}
+                                <p>{% if people_ahead %}There are <strong>{{ people_ahead }}</strong> patients ahead of you.{% else %}You are next in line! Please stay near the room.{% endif %}</p>
+                            {% elif patient_queue.status == 'CALLED' %}
+                                <p class="highlight-text"><i class="fa-solid fa-bullhorn"></i> Please proceed to <strong>{{ patient_queue.room or 'the consultation room' }}</strong> now.</p>
+                            {% elif patient_queue.status == 'IN_CONSULTATION' %}
+                                <p>Your consultation is currently in progress with the clinician.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <a class="patient-text-link" href="{{ url_for('queue.live_monitor') }}">
+                    Open Fullscreen Hospital Monitor <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            {% else %}
+                <div class="patient-queue-empty">
+                    <div class="empty-icon-circle"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div>
+                        <strong>No Active Queue Ticket Today</strong>
+                        <p>{% if next_appointment %}Your queue number will automatically appear on the day of your appointment.{% else %}Book an appointment with a hospital doctor to get your live queue number.{% endif %}</p>
+                    </div>
+                </div>
+                {% if next_appointment %}
+                    <a class="patient-text-link" href="{{ url_for('appointments.my_appointments') }}">
+                        View Scheduled Appointment <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                {% else %}
+                    <a class="patient-text-link" href="{{ url_for('hospitals.hospitals') }}">
+                        Find Hospitals & Clinics <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                {% endif %}
+            {% endif %}
+        </section>
+
+        <!-- Next Appointment Card -->
+        <section class="patient-panel patient-next-panel">
+            <div class="patient-panel-heading">
+                <div>
+                    <p class="patient-eyebrow">UPCOMING CARE</p>
+                    <h2><i class="fa-solid fa-calendar-day"></i> Next Appointment</h2>
+                </div>
+                <a class="patient-text-link" href="{{ url_for('appointments.my_appointments') }}">All Appointments</a>
+            </div>
+            {% if next_appointment %}
+                <div class="appointment-banner-card">
+                    <div class="patient-appointment-date">
+                        <strong>{{ next_appointment.appointment_date.strftime('%d') }}</strong>
+                        <span>{{ next_appointment.appointment_date.strftime('%b %Y') }}</span>
+                    </div>
+                    <div class="patient-appointment-info">
+                        <strong><i class="fa-solid fa-user-doctor"></i> {{ next_appointment.doctor.name if next_appointment.doctor else 'Care Provider' }}</strong>
+                        <span><i class="fa-solid fa-stethoscope"></i> {{ next_appointment.doctor.specialization if next_appointment.doctor else 'General Care' }}</span>
+                        <span><i class="fa-solid fa-hospital"></i> {{ next_appointment.hospital.name if next_appointment.hospital else 'Hospital' }}</span>
+                        <span class="time-badge"><i class="fa-solid fa-clock"></i> {{ next_appointment.appointment_time }} · {{ next_appointment.status|replace('_', ' ')|title }}</span>
+                    </div>
+                </div>
+                <a class="patient-secondary-button" href="{{ url_for('appointments.my_appointments') }}">
+                    <i class="fa-solid fa-circle-info"></i> View Full Appointment Details
+                </a>
+            {% else %}
+                <div class="patient-no-appointment">
+                    <div class="no-app-icon"><i class="fa-solid fa-calendar-plus"></i></div>
+                    <strong>No Upcoming Appointments</strong>
+                    <p>Select a clinic or doctor to schedule your next visit.</p>
+                    <a class="patient-secondary-button" href="{{ url_for('hospitals.hospitals') }}">
+                        <i class="fa-solid fa-magnifying-glass-location"></i> Explore Hospitals
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Upcoming Visits -->
+        <section class="patient-panel patient-upcoming-panel">
+            <div class="patient-panel-heading">
+                <div>
+                    <p class="patient-eyebrow">SCHEDULED VISITS</p>
+                    <h2><i class="fa-solid fa-list-check"></i> Visit Timeline</h2>
+                </div>
+                <a class="patient-text-link" href="{{ url_for('appointments.my_appointments') }}">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            {% if recent_appointments %}
+                <div class="patient-visit-list">
+                    {% for appointment in recent_appointments %}
+                        <article class="patient-visit-row">
+                            <div class="patient-visit-date">
+                                <strong>{{ appointment.appointment_date.strftime('%d') }}</strong>
+                                <span>{{ appointment.appointment_date.strftime('%b') }}</span>
+                            </div>
+                            <div class="patient-visit-detail">
+                                <strong>{{ appointment.doctor.name if appointment.doctor else 'Care Provider' }}</strong>
+                                <span>{{ appointment.doctor.specialization if appointment.doctor else 'General' }}{% if appointment.hospital %} · {{ appointment.hospital.name }}{% endif %}</span>
+                            </div>
+                            <span class="patient-visit-status status-pill-{{ appointment.status|lower }}">{{ appointment.status|replace('_', ' ')|title }}</span>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="patient-empty-copy"><i class="fa-solid fa-folder-open"></i> Your scheduled appointments will appear here.</p>
+            {% endif %}
+        </section>
+
+        <!-- Quick Access Shortcuts -->
+        <section class="patient-panel patient-actions-panel">
+            <div class="patient-panel-heading">
+                <div>
+                    <p class="patient-eyebrow">EXPRESS ACTION</p>
+                    <h2><i class="fa-solid fa-bolt"></i> Care shortcuts</h2>
+                </div>
+            </div>
+            <div class="patient-action-list">
+                <a href="{{ url_for('symptoms.assistant') }}" class="shortcut-ai-card">
+                    <span class="patient-action-icon ai-glow"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                    <span><strong>AI Symptom Assistant</strong><small>Get instant Gemini AI triage guidance</small></span>
+                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                </a>
+                <a href="{{ url_for('hospitals.hospitals') }}">
+                    <span class="patient-action-icon icon-blue"><i class="fa-solid fa-hospital-user"></i></span>
+                    <span><strong>Find Care & Hospitals</strong><small>Browse doctors, beds, and departments</small></span>
+                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                </a>
+                <a href="{{ url_for('patient.medical_records') }}">
+                    <span class="patient-action-icon icon-purple"><i class="fa-solid fa-file-medical"></i></span>
+                    <span><strong>Medical Records Vault</strong><small>Access uploaded reports & histories</small></span>
+                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                </a>
+                <a href="{{ url_for('notifications.notifications') }}">
+                    <span class="patient-action-icon icon-orange"><i class="fa-solid fa-bell"></i></span>
+                    <span><strong>Notification Hub</strong><small>{{ unread_notifications }} unread care notifications</small></span>
+                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                </a>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

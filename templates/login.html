@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — HealthForge AI Healthcare Portal</title>
+
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('hf_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+</head>
+
+<body class="login-page">
+
+    <div class="login-bg-decor">
+        <img class="login-bg-img" src="{{ url_for('static', filename='images/hospital_hero.jpg') }}" alt="Hospital Tech Visual">
+        <div class="login-bg-overlay"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-card">
+            
+            <div class="login-header">
+                <div class="login-brand-badge">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                    <span>HealthForge <strong>AI</strong></span>
+                </div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to access your patient portal or clinical workspace</p>
+            </div>
+
+            <!-- Quick One-Click Demo Logins -->
+            <div class="demo-quick-bar">
+                <span class="demo-label"><i class="fa-solid fa-bolt-lightning"></i> Instant Demo Login:</span>
+                <div class="demo-chips">
+                    <button type="button" class="demo-chip chip-doc" onclick="fillDemoLogin('doctor@healthforge.ai', 'doctor123', 'doctor')">
+                        <i class="fa-solid fa-user-doctor"></i> Doctor Demo
+                    </button>
+                    <button type="button" class="demo-chip chip-recep" onclick="fillDemoLogin('receptionist@healthforge.ai', 'receptionist123', 'receptionist')">
+                        <i class="fa-solid fa-headset"></i> Receptionist Demo
+                    </button>
+                    <button type="button" class="demo-chip chip-patient" onclick="fillDemoLogin('doctor@healthforge.ai', 'doctor123', 'patient')">
+                        <i class="fa-solid fa-user-injured"></i> Patient Demo
+                    </button>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.login') }}" class="login-form">
+                
+                <div class="form-group">
+                    <label for="role"><i class="fa-solid fa-user-shield"></i> Login Role</label>
+                    <select id="role" name="role" class="styled-select">
+                        <option value="patient">Patient Portal</option>
+                        <option value="doctor">Medical Doctor</option>
+                        <option value="receptionist">Hospital Receptionist</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-at field-icon"></i>
+                        <input type="email" id="email" name="email" placeholder="e.g., doctor@healthforge.ai" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-key field-icon"></i>
+                        <input type="password" id="password" name="password" placeholder="Enter account password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-submit">
+                    <span>Sign In</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="register-link">
+                <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Create Patient Account</a></p>
+                <a href="{{ url_for('auth.index') }}" class="back-home-link"><i class="fa-solid fa-house"></i> Back to Homepage</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

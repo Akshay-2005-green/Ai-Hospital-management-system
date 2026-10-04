@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}
+Notifications - HealthForge AI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+
+    <h1>
+        Notifications
+    </h1>
+
+    <p>
+        Stay updated about your appointments and health records.
+    </p>
+
+</div>
+
+
+{% if unread_count > 0 %}
+
+<div class="notifications-actions">
+
+    <form
+        method="POST"
+        action="{{ url_for('notifications.mark_all_notifications_read') }}"
+    >
+
+        <button
+            type="submit"
+            class="mark-all-read-button"
+        >
+            Mark all as read
+        </button>
+
+    </form>
+
+</div>
+
+{% endif %}
+
+
+<div class="notifications-page">
+
+    {% for notification in notifications %}
+
+    <div class="notification-item
+        {% if not notification.is_read %}
+            notification-unread
+        {% endif %}"
+    >
+
+        <div class="notification-icon">
+
+            {% if notification.type.value == "APPOINTMENT" %}
+
+                📅
+
+            {% elif notification.type.value == "MEDICAL" %}
+
+                📄
+
+            {% elif notification.type.value == "SYSTEM" %}
+
+                ✓
+
+            {% else %}
+
+                🔔
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="notification-content">
+
+            <div class="notification-title-row">
+
+                <h2>
+                    {{ notification.title }}
+                </h2>
+
+                {% if not notification.is_read %}
+
+                <span class="unread-badge">
+                    New
+                </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <p>
+                {{ notification.message }}
+            </p>
+
+
+            <span class="notification-time">
+
+                {{ notification.created_at.strftime(
+                    "%d %b %Y, %I:%M %p"
+                ) }}
+
+            </span>
+
+
+            {% if not notification.is_read %}
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'notifications.mark_notification_read',
+                    notification_id=notification.notification_id
+                ) }}"
+                class="mark-read-form"
+            >
+
+                <button
+                    type="submit"
+                    class="mark-read-button"
+                >
+                    Mark as read
+                </button>
+
+            </form>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <div class="empty-icon">
+            🔔
+        </div>
+
+        <h2>
+            No Notifications
+        </h2>
+
+        <p>
+            You're all caught up.
+        </p>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

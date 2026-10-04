@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Live Queue Monitor - HealthForge</title>
+
+    <!-- Your existing CSS file -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<aside class="sidebar">
+
+    <!-- Logo -->
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            +
+        </div>
+
+        <div>
+
+            <h2>HealthForge</h2>
+
+            <span>
+                Hospital System
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- Navigation -->
+
+    <nav class="sidebar-nav">
+
+        <a
+            href="{{ url_for(dashboard_endpoint) }}"
+            class="nav-item"
+        >
+
+            <span>▣</span>
+
+            {{ user_role|title }} Dashboard
+
+        </a>
+
+
+        <a
+            href="{{ url_for('hospitals.hospitals') }}"
+            class="nav-item"
+        >
+
+            <span>🏥</span>
+
+            Hospitals
+
+        </a>
+
+
+        <a
+            href="{{ url_for('appointments.my_appointments') }}"
+            class="nav-item"
+        >
+
+            <span>📅</span>
+
+            Appointments
+
+        </a>
+
+
+        {% if user_role == "patient" %}
+            <a
+                href="{{ url_for('appointments.my_doctors') }}"
+                class="nav-item"
+            >
+                <span>👨‍⚕️</span>
+                My Doctors
+            </a>
+        {% endif %}
+
+
+        <a
+            href="{{ url_for('queue.live_monitor') }}"
+            class="nav-item"
+            style="background:#eef8f7; color:#0b9f8f;"
+        >
+
+            <span>📺</span>
+
+            Live Monitor
+
+        </a>
+
+    </nav>
+
+
+    <!-- Bottom -->
+
+    <div class="sidebar-bottom">
+
+        <a
+            href="{{ url_for('auth.logout') }}"
+            class="nav-item logout"
+        >
+
+            <span>↪</span>
+
+            Logout
+
+        </a>
+
+    </div>
+
+</aside>
+
+
+
+<!-- =====================================================
+     MAIN CONTENT
+===================================================== -->
+
+<main class="main-content">
+
+
+    <div class="live-monitor-page">
+
+
+        <!-- =================================================
+             HEADER
+        ================================================== -->
+
+        <div class="live-monitor-header">
+
+
+            <div class="live-monitor-title">
+
+                <h1>
+                    Live Monitor
+                </h1>
+
+                <p>
+                    Central Hall Queue Display
+                    • Terminal ID: MN-01
+                </p>
+
+            </div>
+
+
+            <div class="live-monitor-meta">
+
+                <div
+                    id="current-time"
+                    class="live-monitor-time"
+                >
+                    00:00
+                </div>
+
+                <div
+                    id="current-date"
+                    class="live-monitor-date"
+                >
+                    Loading...
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             CURRENTLY SERVING
+        ================================================== -->
+
+        <div class="live-section-header">
+
+
+            <div class="live-section-title">
+
+                <div class="live-section-icon">
+                    📢
+                </div>
+
+                <h2>
+                    Currently Serving
+                </h2>
+
+            </div>
+
+
+            <div class="live-status">
+
+                <span class="live-status-dot"></span>
+
+                LIVE UPDATES
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- Serving cards will be inserted by JavaScript -->
+
+        <div
+            id="serving-container"
+            class="live-serving-grid"
+        >
+
+            <div class="live-loading">
+
+                Loading queue...
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             WAITING QUEUES
+        ================================================== -->
+
+        <div class="live-waiting-section">
+
+
+            <div class="live-section-header">
+
+                <div class="live-section-title">
+
+                    <div class="live-section-icon">
+                        👥
+                    </div>
+
+                    <h2>
+                        Waiting Queues
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <!-- Waiting queue cards inserted here -->
+
+            <div
+                id="waiting-container"
+                class="live-waiting-grid"
+            >
+
+                <div class="live-loading">
+
+                    Loading waiting queues...
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             ANNOUNCEMENT
+        ================================================== -->
+
+        <div class="live-announcement">
+
+            <div class="live-announcement-title">
+
+                ANNOUNCEMENTS
+
+            </div>
+
+
+            <div class="live-announcement-text">
+
+                Please wait for your queue number
+                to be called.
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<script
+    src="{{ url_for('static', filename='js/live_monitor.js') }}"
+></script>
+
+
+</body>
+
+</html>

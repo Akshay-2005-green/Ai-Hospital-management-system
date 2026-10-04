@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Reception Desk - HealthForge{% endblock %}
+
+{% block content %}
+<div class="staff-workspace">
+    <header class="staff-page-header">
+        <div>
+            <p class="patient-eyebrow">FRONT DESK <span class="staff-header-divider">/</span> {{ selected_date }}</p>
+            <h1>Reception desk</h1>
+            <p>Schedule visits, register arrivals, and keep the care team informed.</p>
+        </div>
+        <a href="#new-appointment" class="patient-primary-button"><span aria-hidden="true">＋</span> Add appointment</a>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="staff-message {{ category }}" role="status">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="staff-stat-grid">
+        <article class="staff-stat-card"><span class="patient-stat-icon patient-blue">▦</span><div><small>Today's appointments</small><strong>{{ today_count }}</strong><span class="staff-stat-hint">Scheduled for today</span></div></article>
+        <article class="staff-stat-card"><span class="patient-stat-icon patient-teal">◉</span><div><small>Upcoming appointments</small><strong>{{ upcoming_count }}</strong><span class="staff-stat-hint">Confirmed visits</span></div></article>
+        <article class="staff-stat-card staff-stat-priority"><span class="patient-stat-icon patient-orange">⚑</span><div><small>Priority queue</small><strong>{{ emergency_count }}</strong><span class="staff-stat-hint">Needs clinical review</span></div></article>
+        <article class="staff-stat-card"><span class="patient-stat-icon patient-purple">⌛</span><div><small>Active queue</small><strong>{{ active_queue_count }}</strong><span class="staff-stat-hint">Currently in progress</span></div></article>
+    </section>
+
+    <section class="staff-panel" id="new-appointment">
+        <div class="staff-panel-heading">
+            <div><p class="patient-eyebrow">SCHEDULING</p><h2>Add appointment or urgent arrival</h2><p class="staff-panel-subtitle">Choose an available shift, match a patient, and confirm a booking.</p></div>
+        </div>
+
+        <form method="get" action="{{ url_for('receptionist.dashboard') }}" class="staff-slot-picker">
+            <div>
+                <label for="slot-date">Appointment date</label>
+                <input id="slot-date" type="date" name="date" value="{{ selected_date }}">
+            </div>
+            <div>
+                <label for="slot-doctor">Doctor</label>
+                <select id="slot-doctor" name="doctor_id" required>
+                    <option value="">Select doctor</option>
+                    {% for doctor in doctors %}
+                        <option value="{{ doctor.doctor_id }}" {% if selected_doctor_id == doctor.doctor_id %}selected{% endif %}>
+                            {{ doctor.name }} · {{ doctor.specialization }} · {{ doctor.status|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <input type="hidden" name="view" value="{{ selected_view }}">
+            <button type="submit" class="patient-secondary-button">Check available times</button>
+        </form>
+
+        <form method="post" action="{{ url_for('receptionist.create_appointment') }}" class="staff-booking-form">
+            <input type="hidden" name="doctor_id" value="{{ selected_doctor_id or '' }}">
+            <input type="hidden" name="appointment_date" value="{{ selected_date }}">
+
+            <fieldset class="staff-patient-choice">
+                <legend>Patient</legend>
+                <label><input type="radio" name="patient_mode" value="existing" checked> Existing patient</label>
+                <label><input type="radio" name="patient_mode" value="new"> New walk-in patient</label>
+            </fieldset>
+
+            <div class="staff-existing-patient">
+                <label for="patient-id">Select registered patient</label>
+                <select id="patient-id" name="patient_id">
+                    <option value="">Select patient</option>
+                    {% for patient in patients %}
+                        <option value="{{ patient.patient_id }}">{{ patient.name }} · {{ patient.phone }} · {{ patient.email }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="staff-new-patient" hidden>
+                <label for="new-patient-name">Patient name</label>
+                <input id="new-patient-name" name="new_patient_name" maxlength="100">
+                <label for="new-patient-email">Email</label>
+                <input id="new-patient-email" name="new_patient_email" type="email" maxlength="150">
+                <label for="new-patient-phone">Phone</label>
+                <input id="new-patient-phone" name="new_patient_phone" type="tel" maxlength="20">
+            </div>
+
+            <div class="staff-booking-fields">
+                <div class="staff-time-field">
+                    <label for="appointment-time">Available doctor time</label>
+                    <select id="appointment-time" name="appointment_time">
+                        <option value="">Select an available time</option>
+                        {% for slot in slots %}
+                            <option value="{{ slot.value }}">{{ slot.label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if selected_doctor_id and not slots %}
+                        <small>No unbooked hours found. Check the selected doctor's availability and shift settings.</small>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="appointment-reason">Visit reason (optional)</label>
+                    <input id="appointment-reason" name="reason" maxlength="500" placeholder="Brief, non-sensitive reason">
+                </div>
+            </div>
+
+            <label class="staff-emergency-toggle">
+                <input type="checkbox" name="is_emergency" value="yes" id="is-emergency">
+                <span><strong>Emergency / urgent arrival</strong><small>Skip ordinary slot selection; register for immediate clinical assessment and priority queue placement. If life-threatening, contact emergency services.</small></span>
+            </label>
+            <p class="staff-emergency-warning">Reception staff must not make clinical triage decisions. A clinician should assess emergency arrivals immediately.</p>
+            <button type="submit" class="patient-primary-button" {% if not selected_doctor_id %}disabled{% endif %}>Create appointment / register arrival</button>
+        </form>
+    </section>
+
+    <section class="staff-panel staff-appointments-panel">
+        <div class="staff-panel-heading">
+            <div><p class="patient-eyebrow">APPOINTMENT BOOK</p><h2>Appointments</h2></div>
+            <strong class="staff-count-chip">{{ appointments|length }} shown</strong>
+        </div>
+        <nav class="staff-view-tabs" aria-label="Appointment date filter">
+            <a class="{% if selected_view == 'today' %}active{% endif %}" href="{{ url_for('receptionist.dashboard', view='today', q=search) }}">Today</a>
+            <a class="{% if selected_view == 'week' %}active{% endif %}" href="{{ url_for('receptionist.dashboard', view='week', q=search) }}">This week</a>
+            <a class="{% if selected_view == 'all' %}active{% endif %}" href="{{ url_for('receptionist.dashboard', view='all', q=search) }}">All</a>
+        </nav>
+        <form method="get" action="{{ url_for('receptionist.dashboard') }}" class="staff-search-form">
+            <input type="hidden" name="view" value="{{ selected_view }}">
+            <input name="q" value="{{ search }}" placeholder="Search patient name, phone or email">
+            <button class="patient-secondary-button" type="submit">Search</button>
+        </form>
+
+        {% if appointments %}
+            <div class="staff-appointment-grid">
+                {% for appointment in appointments %}
+                    <article class="staff-appointment-card {% if appointment.queue_entry and appointment.queue_entry.is_emergency %}emergency{% endif %}">
+                        <div class="staff-appointment-topline">
+                            <span class="staff-appointment-type">{{ 'Priority arrival' if appointment.queue_entry and appointment.queue_entry.is_emergency else 'Appointment' }}</span>
+                            <span class="staff-appointment-status">{{ appointment.status|replace('_', ' ')|title }}</span>
+                        </div>
+                        <h3>{{ appointment.patient.name if appointment.patient else 'Patient' }}</h3>
+                        <div class="staff-appointment-meta">
+                            <span>☎ {{ appointment.patient.phone if appointment.patient else 'No phone' }}</span>
+                            <span>▦ {{ appointment.appointment_date.strftime('%a, %d %b %Y') }} · {{ appointment.appointment_time }}</span>
+                            <span>⚕ {{ appointment.doctor.name if appointment.doctor else 'Doctor' }} · {{ appointment.doctor.specialization if appointment.doctor else '' }}</span>
+                            <span>⌂ {{ appointment.hospital.name if appointment.hospital else 'Hospital' }}</span>
+                        </div>
+                        {% if appointment.reason %}<p class="staff-appointment-reason">{{ appointment.reason }}</p>{% endif %}
+                        {% if appointment.queue_entry %}
+                            <p class="staff-queue-token">Queue {{ appointment.queue_entry.queue_number }} · {{ appointment.queue_entry.status|replace('_', ' ')|title }}</p>
+                        {% endif %}
+                        <div class="staff-card-actions">
+                            {% if appointment.status not in ['CANCELLED', 'COMPLETED', 'NO_SHOW'] and not appointment.queue_entry %}
+                                <form method="post" action="{{ url_for('receptionist.update_appointment', appointment_id=appointment.appointment_id, action='check-in') }}"><button type="submit" class="patient-secondary-button">Check in</button></form>
+                            {% endif %}
+                            {% if appointment.status not in ['CANCELLED', 'COMPLETED', 'NO_SHOW'] %}
+                                <form method="post" action="{{ url_for('receptionist.update_appointment', appointment_id=appointment.appointment_id, action='cancel') }}" onsubmit="return confirm('Cancel this appointment?')"><button type="submit" class="staff-cancel-button">Cancel</button></form>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="patient-queue-empty"><span class="patient-queue-empty-icon">▦</span><div><strong>No appointments in this view</strong><p>Try another date filter or create a new appointment above.</p></div></div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const patientModes = document.querySelectorAll('input[name="patient_mode"]');
+    const existingPatient = document.querySelector(".staff-existing-patient");
+    const newPatient = document.querySelector(".staff-new-patient");
+    const patientSelect = document.getElementById("patient-id");
+    const newPatientInputs = newPatient.querySelectorAll("input");
+    function updatePatientFields() {
+        const isNew = document.querySelector('input[name="patient_mode"]:checked').value === "new";
+        existingPatient.hidden = isNew;
+        newPatient.hidden = !isNew;
+        patientSelect.required = !isNew;
+        newPatientInputs.forEach((input) => { input.required = isNew; });
+    }
+    patientModes.forEach((mode) => mode.addEventListener("change", updatePatientFields));
+    updatePatientFields();
+
+    const emergency = document.getElementById("is-emergency");
+    const appointmentTime = document.getElementById("appointment-time");
+    function updateEmergencyFields() {
+        appointmentTime.disabled = emergency.checked;
+        appointmentTime.required = !emergency.checked;
+    }
+    emergency.addEventListener("change", updateEmergencyFields);
+    updateEmergencyFields();
+</script>
+{% endblock %}

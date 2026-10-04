@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}AI Symptom Care Navigator — HealthForge{% endblock %}
+
+{% block content %}
+<div class="symptom-assistant">
+    <!-- Hero Banner with Generated AI Graphic -->
+    <header class="symptom-hero-banner">
+        <div class="symptom-hero-overlay"></div>
+        <img class="symptom-hero-img" src="{{ url_for('static', filename='images/medical_ai_banner.jpg') }}" alt="AI Health Assistant Visual">
+        <div class="symptom-hero-content">
+            <span class="ai-hero-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> POWERED BY GEMINI AI</span>
+            <h1>AI Care Navigator</h1>
+            <p>Describe your health symptoms to get instant AI-guided triage, urgency rating, and specialty recommendations.</p>
+        </div>
+    </header>
+
+    <div class="symptom-safety-note" role="note">
+        <i class="fa-solid fa-shield-halved safety-icon"></i>
+        <div>
+            <strong>Medical Disclaimer & Privacy Notice</strong>
+            <span>This tool provides general triage advice and is not a medical diagnosis. In case of severe emergency, contact emergency medical services immediately.</span>
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="symptom-error" role="alert">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>{{ error }}</span>
+        </div>
+    {% endif %}
+
+    {% if result and result.emergency %}
+        <section class="symptom-result symptom-emergency" role="alert">
+            <div class="emergency-header">
+                <i class="fa-solid fa-lightbulb-exclamation fa-bounce"></i>
+                <div>
+                    <p class="patient-eyebrow">URGENT MEDICAL SAFETY WARNING</p>
+                    <h2>Seek Emergency Care Immediately (Seek emergency help now)</h2>
+                </div>
+            </div>
+            <p>Your symptoms match critical medical warning signs (such as severe chest pain, extreme breathlessness, stroke indicators, or heavy bleeding). Please dial emergency services or visit the nearest Emergency Department without delay.</p>
+            <div class="emergency-actions">
+                <a class="patient-primary-button emergency-btn" href="tel:112"><i class="fa-solid fa-phone"></i> Call Emergency (112 / 911)</a>
+                <a class="patient-secondary-button" href="{{ url_for('hospitals.hospitals') }}"><i class="fa-solid fa-hospital"></i> Nearby Hospitals</a>
+            </div>
+        </section>
+    {% elif result %}
+        <section class="symptom-result-card" aria-live="polite">
+            <div class="result-card-header">
+                <div>
+                    <p class="patient-eyebrow">AI CARE TRIAGE REPORT</p>
+                    <h2>Suggested Clinical Direction</h2>
+                </div>
+                <button type="button" class="audio-listen-btn" onclick="speakText('Care Navigation Suggestion: Urgency level is {{ result.urgency }}. Recommended Specialty: {{ result.specialty }}. {{ result.explanation }}')" title="Listen to AI Summary">
+                    <i class="fa-solid fa-volume-high"></i> Listen
+                </button>
+            </div>
+
+            <div class="symptom-result-summary">
+                <div class="symptom-urgency {{ result.urgency }}">
+                    <i class="fa-solid {% if result.urgency == 'urgent' %}fa-triangle-exclamation{% elif result.urgency == 'moderate' %}fa-clock{% else %}fa-circle-check{% endif %}"></i>
+                    <span>{{ result.urgency|title }} Priority Care</span>
+                </div>
+                <div class="symptom-specialty-chip">
+                    <i class="fa-solid fa-user-doctor"></i>
+                    <strong>{{ result.specialty }}</strong>
+                </div>
+            </div>
+
+            <div class="result-body-box">
+                <div class="result-section">
+                    <h3><i class="fa-solid fa-clipboard-question"></i> AI Assessment</h3>
+                    <p>{{ result.explanation }}</p>
+                </div>
+                <div class="result-section">
+                    <h3><i class="fa-solid fa-route"></i> Recommended Action</h3>
+                    <p>{{ result.next_step }}</p>
+                </div>
+            </div>
+
+            {% if result.urgency == "urgent" %}
+                <div class="symptom-urgent-reminder">
+                    <i class="fa-solid fa-bell-exclamation"></i>
+                    <span>Please contact a healthcare professional promptly. If symptoms worsen, seek immediate emergency care.</span>
+                </div>
+            {% endif %}
+
+            <div class="result-footer-actions">
+                <a class="patient-primary-button" href="{{ url_for('hospitals.hospitals') }}">
+                    <i class="fa-solid fa-calendar-plus"></i> Book {{ result.specialty }} Appointment
+                </a>
+                <a class="patient-secondary-button" href="{{ url_for('symptoms.assistant') }}">
+                    <i class="fa-solid fa-rotate-left"></i> Check New Symptoms
+                </a>
+            </div>
+        </section>
+    {% endif %}
+
+    <section class="patient-panel symptom-form-panel">
+        <div class="patient-panel-heading">
+            <div>
+                <p class="patient-eyebrow">INPUT SYMPTOMS & DETAILS</p>
+                <h2>What are you feeling today?</h2>
+            </div>
+        </div>
+
+        <form method="post" class="symptom-form" id="symptom-form">
+            <!-- Quick Chips Selector -->
+            <div class="symptom-chips-wrapper">
+                <span class="chips-label"><i class="fa-solid fa-lightbulb"></i> Tap to add common symptoms:</span>
+                <div class="chips-grid">
+                    <button type="button" class="symptom-chip" onclick="appendSymptom('Fever & Chills')">🤒 Fever & Chills</button>
+                    <button type="button" class="symptom-chip" onclick="appendSymptom('Persistent Cough')">😷 Persistent Cough</button>
+                    <button type="button" class="symptom-chip" onclick="appendSymptom('Throat Irritation')">🗣 Throat Pain</button>
+                    <button type="button" class="symptom-chip" onclick="appendSymptom('Severe Headache')">🧠 Headache</button>
+                    <button type="button" class="symptom-chip" onclick="appendSymptom('Chest Tightness')">🫁 Chest Tightness</button>
+                    <button type="button" class="symptom-chip" onclick="appendSymptom('Fatigue & Weakness')">🔋 Fatigue</button>
+                    <button type="button" class="symptom-chip" onclick="appendSymptom('Stomach Ache')">🤢 Stomach Ache</button>
+                    <button type="button" class="symptom-chip" onclick="appendSymptom('Joint & Muscle Pain')">🦴 Joint Pain</button>
+                    <button type="button" class="symptom-chip" onclick="appendSymptom('Dizziness & Lightheadedness')">⚡ Dizziness</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="symptoms"><i class="fa-solid fa-pen-clip"></i> Describe your symptoms in detail</label>
+                <textarea id="symptoms" name="symptoms" maxlength="2000" rows="4" placeholder="e.g., I have had a dry cough, mild throat pain, and slight fever for 2 days..." data-normal-required data-autofocus="true">{{ form_data.symptoms }}</textarea>
+            </div>
+
+            <div class="symptom-form-row">
+                <div class="form-group">
+                    <label for="duration"><i class="fa-solid fa-clock-rotate-left"></i> Duration</label>
+                    <input id="duration" name="duration" maxlength="120" value="{{ form_data.duration }}" placeholder="e.g., 2 days, since morning">
+                </div>
+                <div class="form-group">
+                    <div class="severity-label-flex">
+                        <label for="severity"><i class="fa-solid fa-gauge-high"></i> Severity Scale (1 to 10)</label>
+                        <span class="severity-indicator-badge" id="severity-badge">Level <span id="severity-num">{{ form_data.severity or '5' }}</span></span>
+                    </div>
+                    <input type="range" id="severity" name="severity" min="1" max="10" value="{{ form_data.severity or 5 }}" class="severity-slider" oninput="updateSeverityLabel(this.value)">
+                </div>
+            </div>
+
+            <fieldset class="symptom-emergency-check">
+                <legend><i class="fa-solid fa-triangle-exclamation"></i> Emergency Warning Check</legend>
+                <label>
+                    <input type="checkbox" name="emergency_signs" value="yes" id="emergency-signs">
+                    <span>I am currently experiencing severe chest pain, severe trouble breathing, fainting, or sudden numbness/weakness.</span>
+                </label>
+                <small>Checking this box bypasses AI analysis and immediately provides emergency contact instructions.</small>
+            </fieldset>
+
+            <label class="symptom-consent">
+                <input type="checkbox" name="privacy_consent" value="yes" data-normal-required checked>
+                <span>I consent to process my symptom summary with Google Gemini AI for health navigation. No personal identifying information is stored.</span>
+            </label>
+
+            <button class="patient-primary-button submit-ai-btn" type="submit" id="submit-btn">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Symptoms with AI
+            </button>
+        </form>
+
+        <p class="symptom-privacy-footnote"><i class="fa-solid fa-lock"></i> End-to-end encrypted session. Do not include your personal contact details or national ID numbers.</p>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const emergencySigns = document.getElementById("emergency-signs");
+    const normalRequiredFields = document.querySelectorAll("[data-normal-required]");
+    function updateSymptomRequirements() {
+        normalRequiredFields.forEach((field) => {
+            field.required = !emergencySigns.checked;
+        });
+    }
+    if (emergencySigns) {
+        emergencySigns.addEventListener("change", updateSymptomRequirements);
+        updateSymptomRequirements();
+    }
+    // Initialize severity label on page load
+    const severityInput = document.getElementById("severity");
+    if (severityInput) {
+        updateSeverityLabel(severityInput.value);
+    }
+</script>
+{% endblock %}
